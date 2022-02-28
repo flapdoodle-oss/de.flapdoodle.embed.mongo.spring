@@ -20,4 +20,6 @@ Snapshots (Repository http://oss.sonatype.org/content/repositories/snapshots)
 		<version>1.0.0-SNAPSHOT</version>
 	</dependency>
 
+### [HowTo](HowTo.md)
+
 

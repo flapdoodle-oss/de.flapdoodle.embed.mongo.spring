@@ -20,19 +20,12 @@
  */
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
-import de.flapdoodle.embed.process.config.store.ImmutableDownloadConfig;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/**
- * copy of @{@link org.springframework.boot.autoconfigure.mongo.embedded.DownloadConfigBuilderCustomizer}
- */
-@FunctionalInterface
-public interface DownloadConfigBuilderCustomizer {
-
-	/**
-	 * Customize the {@link ImmutableDownloadConfig.Builder}.
-	 * @param downloadConfigBuilder the {@link ImmutableDownloadConfig.Builder} to
-	 * customize
-	 */
-	void customize(ImmutableDownloadConfig.Builder downloadConfigBuilder);
-
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
 }

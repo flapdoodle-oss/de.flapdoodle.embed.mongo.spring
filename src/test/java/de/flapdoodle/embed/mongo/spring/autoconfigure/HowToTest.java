@@ -20,19 +20,23 @@
  */
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
-import de.flapdoodle.embed.process.config.store.ImmutableDownloadConfig;
+import de.flapdoodle.testdoc.Includes;
+import de.flapdoodle.testdoc.Recorder;
+import de.flapdoodle.testdoc.Recording;
+import de.flapdoodle.testdoc.TabSize;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration;
 
-/**
- * copy of @{@link org.springframework.boot.autoconfigure.mongo.embedded.DownloadConfigBuilderCustomizer}
- */
-@FunctionalInterface
-public interface DownloadConfigBuilderCustomizer {
+public class HowToTest {
+	
+	@RegisterExtension
+	public static Recording recording= Recorder.with("HowTo.md", TabSize.spaces(2))
+		.sourceCodeOf("autoConfigClass", AutoConfigTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim);
 
-	/**
-	 * Customize the {@link ImmutableDownloadConfig.Builder}.
-	 * @param downloadConfigBuilder the {@link ImmutableDownloadConfig.Builder} to
-	 * customize
-	 */
-	void customize(ImmutableDownloadConfig.Builder downloadConfigBuilder);
-
+	@Test
+	public void noop() {
+		recording.begin();
+		recording.end();
+	}
 }
