@@ -13,8 +13,9 @@
     <groupId>de.flapdoodle.embed</groupId>
     <artifactId>de.flapdoodle.embed.mongo.spring</artifactId>
     <name>Flapdoodle Embedded MongoDB Spring Integration</name>
-    <version>1.0.0-spring25-SNAPSHOT</version>
+    <version>1.0.0-spring25x-SNAPSHOT</version>
     <packaging>jar</packaging>
+    <description>flapdoodle embedded mongo spring 2.6.x integration</description>
 
     <url>http://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo.spring</url>
 
