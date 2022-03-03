@@ -17,7 +17,7 @@ Snapshots (Repository http://oss.sonatype.org/content/repositories/snapshots)
 	<dependency>
 		<groupId>de.flapdoodle.embed</groupId>
 		<artifactId>de.flapdoodle.embed.mongo.spring</artifactId>
-		<version>1.0.1-spring26-SNAPSHOT</version>
+		<version>1.0.3-spring26-SNAPSHOT</version>
 	</dependency>
 
 ### [HowTo](HowTo.md)
