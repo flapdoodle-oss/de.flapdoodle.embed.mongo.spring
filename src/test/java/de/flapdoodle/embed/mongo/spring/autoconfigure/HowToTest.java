@@ -27,16 +27,23 @@ import de.flapdoodle.testdoc.TabSize;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 public class HowToTest {
 	
 	@RegisterExtension
 	public static Recording recording= Recorder.with("HowTo.md", TabSize.spaces(2))
-		.sourceCodeOf("autoConfigClass", AutoConfigTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim);
+		.sourceCodeOf("autoConfigClass", AutoConfigTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		.sourceCodeOf("firstIsolation", AutoConfigFirstIsolationTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		.sourceCodeOf("secondIsolation", AutoConfigSecondIsolationTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim);
 
 	@Test
 	public void noop() {
 		recording.begin();
+		String prefix = EmbeddedMongoProperties.class.getAnnotation(ConfigurationProperties.class).prefix();
+		String legacyPrefix = LegacyEmbeddedMongoProperties.class.getAnnotation(ConfigurationProperties.class).prefix();
+		recording.output("prefix", prefix);
+		recording.output("legacyPrefix", legacyPrefix);
 		recording.end();
 	}
 }

@@ -20,27 +20,23 @@
  */
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
-import java.util.Set;
-
-import de.flapdoodle.embed.mongo.distribution.Feature;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.util.unit.DataSize;
 import org.springframework.util.unit.DataUnit;
 
 /**
- * copy of @{@link LegacyEmbeddedMongoProperties}
+ * copy of @{@link org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoProperties}
  */
-@ConfigurationProperties(prefix = "de.flapdoodle.mongodb.embedded")
-public class EmbeddedMongoProperties {
+@ConfigurationProperties(prefix = "spring.mongodb.embedded")
+public class LegacyEmbeddedMongoProperties {
 
 	/**
 	 * Version of Mongo to use.
 	 */
 	private String version;
 
-	private final EmbeddedMongoProperties.Storage storage = new EmbeddedMongoProperties.Storage();
+	private final LegacyEmbeddedMongoProperties.Storage storage = new LegacyEmbeddedMongoProperties.Storage();
 
 	/**
 	 * Comma-separated list of features to enable. Uses the defaults of the configured
@@ -54,7 +50,7 @@ public class EmbeddedMongoProperties {
 		this.version = version;
 	}
 
-	public EmbeddedMongoProperties.Storage getStorage() {
+	public LegacyEmbeddedMongoProperties.Storage getStorage() {
 		return this.storage;
 	}
 
