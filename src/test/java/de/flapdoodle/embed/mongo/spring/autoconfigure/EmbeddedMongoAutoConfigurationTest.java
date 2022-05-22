@@ -22,9 +22,7 @@ package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.EnumSet;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -32,7 +30,6 @@ import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodStarter;
 import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.config.Storage;
-import de.flapdoodle.embed.mongo.distribution.Feature;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.config.RuntimeConfig;
 import de.flapdoodle.embed.process.config.store.DownloadConfig;

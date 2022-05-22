@@ -32,7 +32,9 @@ public class HowToTest {
 	
 	@RegisterExtension
 	public static Recording recording= Recorder.with("HowTo.md", TabSize.spaces(2))
-		.sourceCodeOf("autoConfigClass", AutoConfigTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim);
+		.sourceCodeOf("autoConfigClass", AutoConfigTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		.sourceCodeOf("firstIsolation", AutoConfigFirstIsolationTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		.sourceCodeOf("secondIsolation", AutoConfigSecondIsolationTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim);
 
 	@Test
 	public void noop() {
