@@ -44,6 +44,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.data.mongo.MongoClientDependsOnBeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.data.mongo.ReactiveStreamsMongoClientDependsOnBeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
@@ -112,9 +113,10 @@ public class EmbeddedMongoAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public MongodConfig embeddedMongoConfiguration(EmbeddedMongoProperties embeddedProperties) throws IOException {
-		ImmutableMongodConfig.Builder builder = MongodConfig.builder().version(determineVersion("de.flapdoodle", embeddedProperties.getVersion()));
-		EmbeddedMongoProperties.Storage storage = embeddedProperties.getStorage();
+	@ConditionalOnProperty(name = "spring.mongodb.embedded.version")
+	public MongodConfig embeddedLegacyMongoConfiguration(LegacyEmbeddedMongoProperties embeddedProperties) throws IOException {
+		ImmutableMongodConfig.Builder builder = MongodConfig.builder().version(determineVersion("spring", embeddedProperties.getVersion()));
+		LegacyEmbeddedMongoProperties.Storage storage = embeddedProperties.getStorage();
 		if (storage != null) {
 			String databaseDir = storage.getDatabaseDir();
 			String replSetName = storage.getReplSetName();
@@ -134,9 +136,9 @@ public class EmbeddedMongoAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public MongodConfig embeddedLegacyMongoConfiguration(LegacyEmbeddedMongoProperties embeddedProperties) throws IOException {
-		ImmutableMongodConfig.Builder builder = MongodConfig.builder().version(determineVersion("spring", embeddedProperties.getVersion()));
-		LegacyEmbeddedMongoProperties.Storage storage = embeddedProperties.getStorage();
+	public MongodConfig embeddedMongoConfiguration(EmbeddedMongoProperties embeddedProperties) throws IOException {
+		ImmutableMongodConfig.Builder builder = MongodConfig.builder().version(determineVersion("de.flapdoodle", embeddedProperties.getVersion()));
+		EmbeddedMongoProperties.Storage storage = embeddedProperties.getStorage();
 		if (storage != null) {
 			String databaseDir = storage.getDatabaseDir();
 			String replSetName = storage.getReplSetName();
