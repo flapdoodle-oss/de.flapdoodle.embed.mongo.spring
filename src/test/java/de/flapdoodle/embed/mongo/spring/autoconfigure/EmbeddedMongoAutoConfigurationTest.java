@@ -78,7 +78,7 @@ class EmbeddedMongoAutoConfigurationTests {
 		this.context.register(MongoAutoConfiguration.class, MongoDataAutoConfiguration.class,
 			EmbeddedMongoAutoConfiguration.class);
 		assertThatThrownBy(() -> this.context.refresh()).hasRootCauseExactlyInstanceOf(IllegalStateException.class)
-			.hasRootCauseMessage("Set the spring.mongodb.embedded.version property or define your own MongodConfig "
+			.hasRootCauseMessage("Set the de.flapdoodle.mongodb.embedded.version property or define your own MongodConfig "
 				+ "bean to use embedded MongoDB");
 	}
 
@@ -122,7 +122,7 @@ class EmbeddedMongoAutoConfigurationTests {
 	@Test
 	void portIsAvailableInParentContext() {
 		try (ConfigurableApplicationContext parent = new AnnotationConfigApplicationContext()) {
-			TestPropertyValues.of("spring.mongodb.embedded.version=3.5.5").applyTo(parent);
+			TestPropertyValues.of("de.flapdoodle.mongodb.embedded.version=3.5.5").applyTo(parent);
 			parent.refresh();
 			this.context = new AnnotationConfigApplicationContext();
 			this.context.setParent(parent);
@@ -145,26 +145,26 @@ class EmbeddedMongoAutoConfigurationTests {
 	void mongoWritesToCustomDatabaseDir(@TempDir Path temp) {
 		File customDatabaseDir = new File(temp.toFile(), "custom-database-dir");
 		FileSystemUtils.deleteRecursively(customDatabaseDir);
-		loadWithValidVersion("spring.mongodb.embedded.storage.databaseDir=" + customDatabaseDir.getPath());
+		loadWithValidVersion("de.flapdoodle.mongodb.embedded.storage.databaseDir=" + customDatabaseDir.getPath());
 		assertThat(customDatabaseDir).isDirectory();
 		assertThat(customDatabaseDir.listFiles()).isNotEmpty();
 	}
 
 	@Test
 	void customOpLogSizeIsAppliedToConfiguration() {
-		loadWithValidVersion("spring.mongodb.embedded.storage.oplogSize=1024KB");
+		loadWithValidVersion("de.flapdoodle.mongodb.embedded.storage.oplogSize=1024KB");
 		assertThat(this.context.getBean(MongodConfig.class).replication().getOplogSize()).isEqualTo(1);
 	}
 
 	@Test
 	void customOpLogSizeUsesMegabytesPerDefault() {
-		loadWithValidVersion("spring.mongodb.embedded.storage.oplogSize=10");
+		loadWithValidVersion("de.flapdoodle.mongodb.embedded.storage.oplogSize=10");
 		assertThat(this.context.getBean(MongodConfig.class).replication().getOplogSize()).isEqualTo(10);
 	}
 
 	@Test
 	void customReplicaSetNameIsAppliedToConfiguration() {
-		loadWithValidVersion("spring.mongodb.embedded.storage.replSetName=testing");
+		loadWithValidVersion("de.flapdoodle.mongodb.embedded.storage.replSetName=testing");
 		assertThat(this.context.getBean(MongodConfig.class).replication().getReplSetName()).isEqualTo("testing");
 	}
 
@@ -198,7 +198,7 @@ class EmbeddedMongoAutoConfigurationTests {
 		this.context = new AnnotationConfigApplicationContext();
 		TestPropertyValues.of("spring.data.mongodb.port=0").applyTo(this.context);
 		if (configuredVersion != null) {
-			TestPropertyValues.of("spring.mongodb.embedded.version=" + configuredVersion).applyTo(this.context);
+			TestPropertyValues.of("de.flapdoodle.mongodb.embedded.version=" + configuredVersion).applyTo(this.context);
 		}
 		this.context.register(MongoAutoConfiguration.class, MongoDataAutoConfiguration.class,
 			EmbeddedMongoAutoConfiguration.class);
@@ -218,7 +218,7 @@ class EmbeddedMongoAutoConfigurationTests {
 		if (config != null) {
 			ctx.register(config);
 		}
-		TestPropertyValues.of("spring.mongodb.embedded.version=3.5.5").applyTo(ctx);
+		TestPropertyValues.of("de.flapdoodle.mongodb.embedded.version=3.5.5").applyTo(ctx);
 		TestPropertyValues.of(environment).applyTo(ctx);
 		ctx.register(EmbeddedMongoAutoConfiguration.class, MongoAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);

@@ -74,7 +74,7 @@ import java.util.stream.Stream;
  * copy of @{@link org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration}
  */
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties({ MongoProperties.class, EmbeddedMongoProperties.class })
+@EnableConfigurationProperties({ MongoProperties.class, EmbeddedMongoProperties.class, LegacyEmbeddedMongoProperties.class })
 @AutoConfigureBefore({MongoAutoConfiguration.class, org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class })
 @ConditionalOnClass({ MongoClientSettings.class, MongodStarter.class })
 @Import({ EmbeddedMongoAutoConfiguration.EmbeddedMongoClientDependsOnBeanFactoryPostProcessor.class,
@@ -113,7 +113,7 @@ public class EmbeddedMongoAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public MongodConfig embeddedMongoConfiguration(EmbeddedMongoProperties embeddedProperties) throws IOException {
-		ImmutableMongodConfig.Builder builder = MongodConfig.builder().version(determineVersion(embeddedProperties));
+		ImmutableMongodConfig.Builder builder = MongodConfig.builder().version(determineVersion("de.flapdoodle", embeddedProperties.getVersion()));
 		EmbeddedMongoProperties.Storage storage = embeddedProperties.getStorage();
 		if (storage != null) {
 			String databaseDir = storage.getDatabaseDir();
@@ -132,14 +132,36 @@ public class EmbeddedMongoAutoConfiguration {
 		return builder.build();
 	}
 
-	private IFeatureAwareVersion determineVersion(EmbeddedMongoProperties embeddedProperties) {
-		Assert.state(embeddedProperties.getVersion() != null, "Set the spring.mongodb.embedded.version property or "
-			+ "define your own MongodConfig bean to use embedded MongoDB");
-		return Versions.withFeatures(createEmbeddedMongoVersion(embeddedProperties));
+	@Bean
+	@ConditionalOnMissingBean
+	public MongodConfig embeddedLegacyMongoConfiguration(LegacyEmbeddedMongoProperties embeddedProperties) throws IOException {
+		ImmutableMongodConfig.Builder builder = MongodConfig.builder().version(determineVersion("spring", embeddedProperties.getVersion()));
+		LegacyEmbeddedMongoProperties.Storage storage = embeddedProperties.getStorage();
+		if (storage != null) {
+			String databaseDir = storage.getDatabaseDir();
+			String replSetName = storage.getReplSetName();
+			int oplogSize = (storage.getOplogSize() != null) ? (int) storage.getOplogSize().toMegabytes() : 0;
+			builder.replication(new Storage(databaseDir, replSetName, oplogSize));
+		}
+		Integer configuredPort = this.properties.getPort();
+		if (configuredPort != null && configuredPort > 0) {
+			builder.net(new Net(getHost().getHostAddress(), configuredPort, Network.localhostIsIPv6()));
+		}
+		else {
+			builder.net(new Net(getHost().getHostAddress(), Network.getFreeServerPort(getHost()),
+				Network.localhostIsIPv6()));
+		}
+		return builder.build();
 	}
 
-	private GenericVersion createEmbeddedMongoVersion(EmbeddedMongoProperties embeddedProperties) {
-		return de.flapdoodle.embed.process.distribution.Version.of(embeddedProperties.getVersion());
+	private IFeatureAwareVersion determineVersion(String prefix, String version) {
+		Assert.state(version != null, "Set the "+prefix+".mongodb.embedded.version property or "
+			+ "define your own MongodConfig bean to use embedded MongoDB");
+		return Versions.withFeatures(createEmbeddedMongoVersion(version));
+	}
+
+	private GenericVersion createEmbeddedMongoVersion(String version) {
+		return de.flapdoodle.embed.process.distribution.Version.of(version);
 	}
 
 	private InetAddress getHost() throws UnknownHostException {
