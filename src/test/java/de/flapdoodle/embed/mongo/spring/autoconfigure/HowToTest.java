@@ -41,9 +41,7 @@ public class HowToTest {
 	public void noop() {
 		recording.begin();
 		String prefix = EmbeddedMongoProperties.class.getAnnotation(ConfigurationProperties.class).prefix();
-		String legacyPrefix = LegacyEmbeddedMongoProperties.class.getAnnotation(ConfigurationProperties.class).prefix();
 		recording.output("prefix", prefix);
-		recording.output("legacyPrefix", legacyPrefix);
 		recording.end();
 	}
 }

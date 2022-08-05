@@ -20,18 +20,11 @@
  */
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
-import java.util.Set;
-
-import de.flapdoodle.embed.mongo.distribution.Feature;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.util.unit.DataSize;
 import org.springframework.util.unit.DataUnit;
 
-/**
- * copy of @{@link LegacyEmbeddedMongoProperties}
- */
 @ConfigurationProperties(prefix = "de.flapdoodle.mongodb.embedded")
 public class EmbeddedMongoProperties {
 
@@ -56,6 +49,13 @@ public class EmbeddedMongoProperties {
 
 	public EmbeddedMongoProperties.Storage getStorage() {
 		return this.storage;
+	}
+
+	@Override public String toString() {
+		return "EmbeddedMongoProperties{" +
+			"version='" + version + '\'' +
+			", storage=" + storage +
+			'}';
 	}
 
 	public static class Storage {
@@ -100,6 +100,13 @@ public class EmbeddedMongoProperties {
 			this.databaseDir = databaseDir;
 		}
 
+		@Override public String toString() {
+			return "Storage{" +
+				"oplogSize=" + oplogSize +
+				", replSetName='" + replSetName + '\'' +
+				", databaseDir='" + databaseDir + '\'' +
+				'}';
+		}
 	}
 
 }

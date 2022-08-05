@@ -62,6 +62,6 @@ public class AutoConfigSecondIsolationTest {
 }
 ```
 
-## Test migration
+## Config Prefix
 
-You should change the mongodb relevant prefix in your config files from `spring.mongodb.embedded` to 'de.flapdoodle.mongodb.embedded'.
+Use 'de.flapdoodle.mongodb.embedded' as prefix in your config files.

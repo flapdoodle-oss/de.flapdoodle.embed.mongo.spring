@@ -20,25 +20,17 @@
  */
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.util.Map;
-
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfig;
+import de.flapdoodle.embed.mongo.commands.MongodArguments;
 import de.flapdoodle.embed.mongo.config.Storage;
 import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.config.RuntimeConfig;
-import de.flapdoodle.embed.process.config.store.DownloadConfig;
+import de.flapdoodle.embed.mongo.transitions.Mongod;
+import de.flapdoodle.embed.process.io.progress.ProgressListener;
+import de.flapdoodle.embed.process.io.progress.StandardConsoleProgressListener;
 import org.bson.Document;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
-import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -50,7 +42,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.util.FileSystemUtils;
+
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -135,52 +129,35 @@ class EmbeddedMongoAutoConfigurationTests {
 	@Test
 	void defaultStorageConfiguration() {
 		loadWithValidVersion(MongoClientConfiguration.class);
-		Storage replication = this.context.getBean(MongodConfig.class).replication();
-		assertThat(replication.getOplogSize()).isEqualTo(0);
-		assertThat(replication.getDatabaseDir()).isNull();
-		assertThat(replication.getReplSetName()).isNull();
-	}
-
-	@Test
-	void mongoWritesToCustomDatabaseDir(@TempDir Path temp) {
-		File customDatabaseDir = new File(temp.toFile(), "custom-database-dir");
-		FileSystemUtils.deleteRecursively(customDatabaseDir);
-		loadWithValidVersion("de.flapdoodle.mongodb.embedded.storage.databaseDir=" + customDatabaseDir.getPath());
-		assertThat(customDatabaseDir).isDirectory();
-		assertThat(customDatabaseDir.listFiles()).isNotEmpty();
+		Optional<Storage> replication = this.context.getBean(MongodArguments.class).replication();
+		assertThat(replication.isPresent()).isFalse();
 	}
 
 	@Test
 	void customOpLogSizeIsAppliedToConfiguration() {
-		loadWithValidVersion("de.flapdoodle.mongodb.embedded.storage.oplogSize=1024KB");
-		assertThat(this.context.getBean(MongodConfig.class).replication().getOplogSize()).isEqualTo(1);
+		loadWithValidVersion(
+			"de.flapdoodle.mongodb.embedded.storage.replSetName=testing",
+			"de.flapdoodle.mongodb.embedded.storage.oplogSize=1024KB"
+		);
+		Optional<Storage> replication = this.context.getBean(MongodArguments.class).replication();
+		assertThat(replication.get().getOplogSize()).isEqualTo(1);
 	}
 
 	@Test
 	void customOpLogSizeUsesMegabytesPerDefault() {
-		loadWithValidVersion("de.flapdoodle.mongodb.embedded.storage.oplogSize=10");
-		assertThat(this.context.getBean(MongodConfig.class).replication().getOplogSize()).isEqualTo(10);
+		loadWithValidVersion(
+			"de.flapdoodle.mongodb.embedded.storage.replSetName=testing",
+			"de.flapdoodle.mongodb.embedded.storage.oplogSize=10"
+		);
+		Optional<Storage> replication = this.context.getBean(MongodArguments.class).replication();
+		assertThat(replication.get().getOplogSize()).isEqualTo(10);
 	}
 
 	@Test
 	void customReplicaSetNameIsAppliedToConfiguration() {
 		loadWithValidVersion("de.flapdoodle.mongodb.embedded.storage.replSetName=testing");
-		assertThat(this.context.getBean(MongodConfig.class).replication().getReplSetName()).isEqualTo("testing");
-	}
-
-	@Test
-	void customizeDownloadConfiguration() {
-		loadWithValidVersion(DownloadConfigBuilderCustomizerConfiguration.class);
-		RuntimeConfig runtimeConfig = this.context.getBean(RuntimeConfig.class);
-		DownloadConfig downloadConfig = (DownloadConfig) new DirectFieldAccessor(runtimeConfig.artifactStore())
-			.getPropertyValue("downloadConfig");
-		assertThat(downloadConfig.getUserAgent()).isEqualTo("Test User Agent");
-	}
-
-	@Test
-	void shutdownHookIsNotRegistered() {
-		loadWithValidVersion();
-		assertThat(this.context.getBean(MongodExecutable.class).isRegisteredJobKiller()).isFalse();
+		Optional<Storage> replication = this.context.getBean(MongodArguments.class).replication();
+		assertThat(replication.get().getReplSetName()).isEqualTo("testing");
 	}
 
 	@Test
@@ -226,10 +203,6 @@ class EmbeddedMongoAutoConfigurationTests {
 		this.context = ctx;
 	}
 
-	private boolean isWindows() {
-		return File.separatorChar == '\\';
-	}
-
 	private int getPort(MongoClient client) {
 		return client.getClusterDescription().getClusterSettings().getHosts().get(0).getPort();
 	}
@@ -245,22 +218,12 @@ class EmbeddedMongoAutoConfigurationTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	static class DownloadConfigBuilderCustomizerConfiguration {
-
-		@Bean
-		DownloadConfigBuilderCustomizer testDownloadConfigBuilderCustomizer() {
-			return (downloadConfigBuilder) -> downloadConfigBuilder.userAgent("Test User Agent");
-		}
-
-	}
-
-	@Configuration(proxyBeanMethods = false)
 	static class CustomMongoConfiguration {
 
 		@Bean(initMethod = "start", destroyMethod = "stop")
-		MongodExecutable customMongoServer(RuntimeConfig runtimeConfig, MongodConfig mongodConfig) {
-			MongodStarter mongodStarter = MongodStarter.getInstance(runtimeConfig);
-			return mongodStarter.prepare(mongodConfig);
+		EmbeddedMongoAutoConfiguration.MongodWrapper customMongoServer() {
+			ProgressListener listener=new StandardConsoleProgressListener();
+			return new EmbeddedMongoAutoConfiguration.MongodWrapper(Mongod.instance().transitions(Version.V3_4_15), listener);
 		}
 
 	}
