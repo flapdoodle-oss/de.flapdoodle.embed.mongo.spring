@@ -11,9 +11,9 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.flapdoodle.embed</groupId>
-    <artifactId>de.flapdoodle.embed.mongo.spring</artifactId>
+    <artifactId>de.flapdoodle.embed.mongo.spring27x</artifactId>
     <name>Flapdoodle Embedded MongoDB Spring Integration</name>
-    <version>1.1.1-spring27x-SNAPSHOT</version>
+    <version>1.1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>flapdoodle embedded mongo spring 2.7.x integration</description>
 
@@ -120,6 +120,9 @@
                         </goals>
                         <configuration>
                             <rules>
+                                <!--
+                                <dependencyConvergence />
+                                -->
                                 <banDuplicateClasses>
                                     <ignoreClasses>
                                         <ignoreClass>com.mongodb.*</ignoreClass>
@@ -383,11 +386,17 @@
             <version>1.3.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.36</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>[3.4.3,3.5.0)</version>
+            <version>3.4.7</version>
         </dependency>
 
         <dependency>
