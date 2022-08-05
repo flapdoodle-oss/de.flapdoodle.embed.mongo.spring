@@ -21,9 +21,6 @@
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
 import com.mongodb.MongoClientSettings;
-//import de.flapdoodle.embed.mongo.Command;
-//import de.flapdoodle.embed.mongo.MongodWrapper;
-//import de.flapdoodle.embed.mongo.MongodStarter;
 import de.flapdoodle.checks.Preconditions;
 import de.flapdoodle.embed.mongo.commands.ImmutableMongodArguments;
 import de.flapdoodle.embed.mongo.commands.MongodArguments;
@@ -32,10 +29,6 @@ import de.flapdoodle.embed.mongo.config.Storage;
 import de.flapdoodle.embed.mongo.distribution.IFeatureAwareVersion;
 import de.flapdoodle.embed.mongo.distribution.Versions;
 import de.flapdoodle.embed.mongo.transitions.Mongod;
-//import de.flapdoodle.embed.process.config.RuntimeConfig;
-//import de.flapdoodle.embed.process.config.io.ProcessOutput;
-//import de.flapdoodle.embed.process.config.store.DownloadConfig;
-//import de.flapdoodle.embed.process.config.store.ImmutableDownloadConfig;
 import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
 import de.flapdoodle.embed.process.distribution.Version.GenericVersion;
 import de.flapdoodle.embed.process.io.ProcessOutput;
@@ -44,9 +37,7 @@ import de.flapdoodle.embed.process.io.Slf4jLevel;
 import de.flapdoodle.embed.process.io.progress.ProgressListener;
 import de.flapdoodle.embed.process.io.progress.ProgressListeners;
 import de.flapdoodle.embed.process.io.progress.Slf4jProgressListener;
-import de.flapdoodle.embed.process.io.progress.StandardConsoleProgressListener;
 import de.flapdoodle.embed.process.runtime.Network;
-//import de.flapdoodle.embed.process.store.ExtractedArtifactStore;
 import de.flapdoodle.reverse.StateID;
 import de.flapdoodle.reverse.Transition;
 import de.flapdoodle.reverse.TransitionWalker;
@@ -155,6 +146,7 @@ public class EmbeddedMongoAutoConfiguration {
 	public MongodArguments mongodArguments(EmbeddedMongoProperties embeddedProperties) {
 		ImmutableMongodArguments.Builder builder = MongodArguments.builder();
 		EmbeddedMongoProperties.Storage storage = embeddedProperties.getStorage();
+		
 		if (storage != null && storage.getReplSetName() !=null ) {
 			String databaseDir = storage.getDatabaseDir();
 			String replSetName = storage.getReplSetName();
@@ -162,50 +154,8 @@ public class EmbeddedMongoAutoConfiguration {
 			builder.replication(Storage.of(replSetName, oplogSize));
 		}
 
-		MongodArguments mongodArguments = builder.build();
-		return mongodArguments;
+		return builder.build();
 	}
-
-//	@Bean(initMethod = "start", destroyMethod = "stop")
-//	@ConditionalOnMissingBean
-//	public MongodWrapper embeddedMongoServer(MongodConfig mongodConfig, RuntimeConfig runtimeConfig,
-//		ApplicationContext context) {
-//		Integer configuredPort = this.properties.getPort();
-//		if (configuredPort == null || configuredPort == 0) {
-//			setEmbeddedPort(context, mongodConfig.net().getPort());
-//		}
-//		MongodStarter mongodStarter = getMongodStarter(runtimeConfig);
-//		return mongodStarter.prepare(mongodConfig);
-//	}
-//
-//	private MongodStarter getMongodStarter(RuntimeConfig runtimeConfig) {
-//		if (runtimeConfig == null) {
-//			return MongodStarter.getDefaultInstance();
-//		}
-//		return MongodStarter.getInstance(runtimeConfig);
-//	}
-//
-//	@Bean
-//	@ConditionalOnMissingBean
-//	public MongodConfig embeddedMongoConfiguration(EmbeddedMongoProperties embeddedProperties) throws IOException {
-//		ImmutableMongodConfig.Builder builder = MongodConfig.builder().version(determineVersion("de.flapdoodle", embeddedProperties.getVersion()));
-//		EmbeddedMongoProperties.Storage storage = embeddedProperties.getStorage();
-//		if (storage != null) {
-//			String databaseDir = storage.getDatabaseDir();
-//			String replSetName = storage.getReplSetName();
-//			int oplogSize = (storage.getOplogSize() != null) ? (int) storage.getOplogSize().toMegabytes() : 0;
-//			builder.replication(Storage.of(replSetName, oplogSize));
-//		}
-//		Integer configuredPort = this.properties.getPort();
-//		if (configuredPort != null && configuredPort > 0) {
-//			builder.net(new Net(getHost().getHostAddress(), configuredPort, Network.localhostIsIPv6()));
-//		}
-//		else {
-//			builder.net(new Net(getHost().getHostAddress(), Network.getFreeServerPort(getHost()),
-//				Network.localhostIsIPv6()));
-//		}
-//		return builder.build();
-//	}
 
 	private IFeatureAwareVersion determineVersion(String prefix, String version) {
 		Assert.state(version != null, "Set the "+prefix+".mongodb.embedded.version property or "
@@ -275,7 +225,6 @@ public class EmbeddedMongoAutoConfiguration {
 		EmbeddedReactiveStreamsMongoClientDependsOnBeanFactoryPostProcessor() {
 			super(MongodWrapper.class);
 		}
-
 	}
 
 	static class MongodWrapper {
