@@ -84,7 +84,7 @@ class EmbeddedMongoAutoConfigurationTests {
 
 	@Test
 	void customUnknownVersion() {
-		assertVersionConfiguration("3.4.1", "3.4.1");
+		assertVersionConfiguration("3.4.15", "3.4.15");
 	}
 	
 	@Test
@@ -191,6 +191,10 @@ class EmbeddedMongoAutoConfigurationTests {
 	}
 
 	private void loadWithValidVersion(Class<?> config, String... environment) {
+		this.context = applicationContext(config, environment);
+	}
+	
+	static AnnotationConfigApplicationContext applicationContext(Class<?> config, String... environment) {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 		if (config != null) {
 			ctx.register(config);
@@ -200,7 +204,7 @@ class EmbeddedMongoAutoConfigurationTests {
 		ctx.register(EmbeddedMongoAutoConfiguration.class, MongoAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
 		ctx.refresh();
-		this.context = ctx;
+		return ctx;
 	}
 
 	private int getPort(MongoClient client) {
@@ -221,9 +225,9 @@ class EmbeddedMongoAutoConfigurationTests {
 	static class CustomMongoConfiguration {
 
 		@Bean(initMethod = "start", destroyMethod = "stop")
-		EmbeddedMongoAutoConfiguration.MongodWrapper customMongoServer() {
+		MongodWrapper customMongoServer() {
 			ProgressListener listener=new StandardConsoleProgressListener();
-			return new EmbeddedMongoAutoConfiguration.MongodWrapper(Mongod.instance().transitions(Version.V3_4_15), listener);
+			return new MongodWrapper(Mongod.instance().transitions(Version.V3_4_15), listener);
 		}
 
 	}

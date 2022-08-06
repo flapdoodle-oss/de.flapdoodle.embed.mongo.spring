@@ -396,7 +396,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>4.0.1-beta</version>
+            <version>4.0.2-beta</version>
         </dependency>
 
         <dependency>

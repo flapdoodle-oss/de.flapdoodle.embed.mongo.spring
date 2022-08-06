@@ -71,11 +71,6 @@ public class EmbeddedMongoProperties {
 		 */
 		private String replSetName;
 
-		/**
-		 * Directory used for data storage.
-		 */
-		private String databaseDir;
-
 		public DataSize getOplogSize() {
 			return this.oplogSize;
 		}
@@ -92,19 +87,10 @@ public class EmbeddedMongoProperties {
 			this.replSetName = replSetName;
 		}
 
-		public String getDatabaseDir() {
-			return this.databaseDir;
-		}
-
-		public void setDatabaseDir(String databaseDir) {
-			this.databaseDir = databaseDir;
-		}
-
 		@Override public String toString() {
 			return "Storage{" +
 				"oplogSize=" + oplogSize +
 				", replSetName='" + replSetName + '\'' +
-				", databaseDir='" + databaseDir + '\'' +
 				'}';
 		}
 	}
