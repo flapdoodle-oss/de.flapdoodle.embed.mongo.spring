@@ -2,7 +2,7 @@
 
 # Embedded MongoDB Spring Integration
 
-Based on Spring 2.6.x
+This is an replacement for the spring mongodb integration project. It is based on Spring 2.6.x.
 
 ## License
 
@@ -20,6 +20,9 @@ Snapshots (Repository http://oss.sonatype.org/content/repositories/snapshots)
 		<version>1.1.1-SNAPSHOT</version>
 	</dependency>
 
-### [HowTo](HowTo.md)
+### Usage
+
+You might find an example for different use cases in this [documentation](HowTo.md). As this documentation is generated
+on each build by running this code, it should work as expected:)
 
 
