@@ -20,18 +20,11 @@
  */
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
-import java.util.Set;
-
-import de.flapdoodle.embed.mongo.distribution.Feature;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.util.unit.DataSize;
 import org.springframework.util.unit.DataUnit;
 
-/**
- * copy of @{@link LegacyEmbeddedMongoProperties}
- */
 @ConfigurationProperties(prefix = "de.flapdoodle.mongodb.embedded")
 public class EmbeddedMongoProperties {
 
@@ -58,6 +51,13 @@ public class EmbeddedMongoProperties {
 		return this.storage;
 	}
 
+	@Override public String toString() {
+		return "EmbeddedMongoProperties{" +
+			"version='" + version + '\'' +
+			", storage=" + storage +
+			'}';
+	}
+
 	public static class Storage {
 
 		/**
@@ -70,11 +70,6 @@ public class EmbeddedMongoProperties {
 		 * Name of the replica set.
 		 */
 		private String replSetName;
-
-		/**
-		 * Directory used for data storage.
-		 */
-		private String databaseDir;
 
 		public DataSize getOplogSize() {
 			return this.oplogSize;
@@ -92,14 +87,12 @@ public class EmbeddedMongoProperties {
 			this.replSetName = replSetName;
 		}
 
-		public String getDatabaseDir() {
-			return this.databaseDir;
+		@Override public String toString() {
+			return "Storage{" +
+				"oplogSize=" + oplogSize +
+				", replSetName='" + replSetName + '\'' +
+				'}';
 		}
-
-		public void setDatabaseDir(String databaseDir) {
-			this.databaseDir = databaseDir;
-		}
-
 	}
 
 }

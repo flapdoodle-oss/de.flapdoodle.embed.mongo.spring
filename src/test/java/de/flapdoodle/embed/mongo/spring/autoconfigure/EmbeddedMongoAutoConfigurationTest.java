@@ -20,37 +20,34 @@
  */
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.util.Map;
-
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfig;
+import de.flapdoodle.embed.mongo.commands.MongodArguments;
 import de.flapdoodle.embed.mongo.config.Storage;
 import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.config.RuntimeConfig;
-import de.flapdoodle.embed.process.config.store.DownloadConfig;
+import de.flapdoodle.embed.mongo.transitions.Mongod;
+import de.flapdoodle.embed.process.io.progress.ProgressListener;
+import de.flapdoodle.embed.process.io.progress.StandardConsoleProgressListener;
+import de.flapdoodle.reverse.Listener;
 import org.bson.Document;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
-import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.util.FileSystemUtils;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -90,7 +87,7 @@ class EmbeddedMongoAutoConfigurationTests {
 
 	@Test
 	void customUnknownVersion() {
-		assertVersionConfiguration("3.4.1", "3.4.1");
+		assertVersionConfiguration("3.4.15", "3.4.15");
 	}
 	
 	@Test
@@ -135,52 +132,35 @@ class EmbeddedMongoAutoConfigurationTests {
 	@Test
 	void defaultStorageConfiguration() {
 		loadWithValidVersion(MongoClientConfiguration.class);
-		Storage replication = this.context.getBean(MongodConfig.class).replication();
-		assertThat(replication.getOplogSize()).isEqualTo(0);
-		assertThat(replication.getDatabaseDir()).isNull();
-		assertThat(replication.getReplSetName()).isNull();
-	}
-
-	@Test
-	void mongoWritesToCustomDatabaseDir(@TempDir Path temp) {
-		File customDatabaseDir = new File(temp.toFile(), "custom-database-dir");
-		FileSystemUtils.deleteRecursively(customDatabaseDir);
-		loadWithValidVersion("de.flapdoodle.mongodb.embedded.storage.databaseDir=" + customDatabaseDir.getPath());
-		assertThat(customDatabaseDir).isDirectory();
-		assertThat(customDatabaseDir.listFiles()).isNotEmpty();
+		Optional<Storage> replication = this.context.getBean(MongodArguments.class).replication();
+		assertThat(replication.isPresent()).isFalse();
 	}
 
 	@Test
 	void customOpLogSizeIsAppliedToConfiguration() {
-		loadWithValidVersion("de.flapdoodle.mongodb.embedded.storage.oplogSize=1024KB");
-		assertThat(this.context.getBean(MongodConfig.class).replication().getOplogSize()).isEqualTo(1);
+		loadWithValidVersion(
+			"de.flapdoodle.mongodb.embedded.storage.replSetName=testing",
+			"de.flapdoodle.mongodb.embedded.storage.oplogSize=1024KB"
+		);
+		Optional<Storage> replication = this.context.getBean(MongodArguments.class).replication();
+		assertThat(replication.get().getOplogSize()).isEqualTo(1);
 	}
 
 	@Test
 	void customOpLogSizeUsesMegabytesPerDefault() {
-		loadWithValidVersion("de.flapdoodle.mongodb.embedded.storage.oplogSize=10");
-		assertThat(this.context.getBean(MongodConfig.class).replication().getOplogSize()).isEqualTo(10);
+		loadWithValidVersion(
+			"de.flapdoodle.mongodb.embedded.storage.replSetName=testing",
+			"de.flapdoodle.mongodb.embedded.storage.oplogSize=10"
+		);
+		Optional<Storage> replication = this.context.getBean(MongodArguments.class).replication();
+		assertThat(replication.get().getOplogSize()).isEqualTo(10);
 	}
 
 	@Test
 	void customReplicaSetNameIsAppliedToConfiguration() {
 		loadWithValidVersion("de.flapdoodle.mongodb.embedded.storage.replSetName=testing");
-		assertThat(this.context.getBean(MongodConfig.class).replication().getReplSetName()).isEqualTo("testing");
-	}
-
-	@Test
-	void customizeDownloadConfiguration() {
-		loadWithValidVersion(DownloadConfigBuilderCustomizerConfiguration.class);
-		RuntimeConfig runtimeConfig = this.context.getBean(RuntimeConfig.class);
-		DownloadConfig downloadConfig = (DownloadConfig) new DirectFieldAccessor(runtimeConfig.artifactStore())
-			.getPropertyValue("downloadConfig");
-		assertThat(downloadConfig.getUserAgent()).isEqualTo("Test User Agent");
-	}
-
-	@Test
-	void shutdownHookIsNotRegistered() {
-		loadWithValidVersion();
-		assertThat(this.context.getBean(MongodExecutable.class).isRegisteredJobKiller()).isFalse();
+		Optional<Storage> replication = this.context.getBean(MongodArguments.class).replication();
+		assertThat(replication.get().getReplSetName()).isEqualTo("testing");
 	}
 
 	@Test
@@ -191,6 +171,34 @@ class EmbeddedMongoAutoConfigurationTests {
 		for (String mongoClientBeanName : mongoClients.keySet()) {
 			BeanDefinition beanDefinition = this.context.getBeanFactory().getBeanDefinition(mongoClientBeanName);
 			assertThat(beanDefinition.getDependsOn()).contains("customMongoServer");
+		}
+	}
+
+	@Test
+	void withoutAuth() {
+		loadWithValidVersion();
+
+		try(MongoClient client = this.context.getBean(MongoClient.class)) {
+			ArrayList<String> collectionNames = client.getDatabase("test")
+				.listCollectionNames()
+				.into(new ArrayList<>());
+
+			assertThat(collectionNames).isEmpty();
+		}
+	}
+
+	@Test
+	void withAuth() {
+		loadWithValidVersion(
+			"spring.data.mongodb.username=user",
+			"spring.data.mongodb.password=passwd");
+
+		try(MongoClient client = this.context.getBean(MongoClient.class)) {
+			ArrayList<String> collectionNames = client.getDatabase("test")
+				.listCollectionNames()
+				.into(new ArrayList<>());
+			
+			assertThat(collectionNames).isEmpty();
 		}
 	}
 
@@ -214,20 +222,20 @@ class EmbeddedMongoAutoConfigurationTests {
 	}
 
 	private void loadWithValidVersion(Class<?> config, String... environment) {
+		this.context = applicationContext(config, environment);
+	}
+	
+	static AnnotationConfigApplicationContext applicationContext(Class<?> config, String... environment) {
 		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 		if (config != null) {
 			ctx.register(config);
 		}
 		TestPropertyValues.of("de.flapdoodle.mongodb.embedded.version=3.5.5").applyTo(ctx);
 		TestPropertyValues.of(environment).applyTo(ctx);
-		ctx.register(EmbeddedMongoAutoConfiguration.class, MongoAutoConfiguration.class,
+		ctx.register(EmbeddedMongoAutoConfiguration.class, MongoAutoConfiguration.class, MongoDataAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
 		ctx.refresh();
-		this.context = ctx;
-	}
-
-	private boolean isWindows() {
-		return File.separatorChar == '\\';
+		return ctx;
 	}
 
 	private int getPort(MongoClient client) {
@@ -245,22 +253,12 @@ class EmbeddedMongoAutoConfigurationTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	static class DownloadConfigBuilderCustomizerConfiguration {
-
-		@Bean
-		DownloadConfigBuilderCustomizer testDownloadConfigBuilderCustomizer() {
-			return (downloadConfigBuilder) -> downloadConfigBuilder.userAgent("Test User Agent");
-		}
-
-	}
-
-	@Configuration(proxyBeanMethods = false)
 	static class CustomMongoConfiguration {
 
 		@Bean(initMethod = "start", destroyMethod = "stop")
-		MongodExecutable customMongoServer(RuntimeConfig runtimeConfig, MongodConfig mongodConfig) {
-			MongodStarter mongodStarter = MongodStarter.getInstance(runtimeConfig);
-			return mongodStarter.prepare(mongodConfig);
+		MongodWrapper customMongoServer() {
+			ProgressListener listener=new StandardConsoleProgressListener();
+			return new MongodWrapper(Mongod.instance().transitions(Version.V3_4_15), listener, Listener.typedBuilder().build());
 		}
 
 	}

@@ -23,6 +23,6 @@ configuration you must annotate your test with `@DirtiesContext` so that this te
 ${secondIsolation}
 ```
 
-## Test migration
+## Config Prefix
 
-You should change the mongodb relevant prefix in your config files from `${noop.legacyPrefix}` to '${noop.prefix}'.
+Use '${noop.prefix}' as prefix in your config files.
