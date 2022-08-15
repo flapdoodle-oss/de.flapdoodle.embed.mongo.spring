@@ -28,6 +28,7 @@ import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.mongo.transitions.Mongod;
 import de.flapdoodle.embed.process.io.progress.ProgressListener;
 import de.flapdoodle.embed.process.io.progress.StandardConsoleProgressListener;
+import de.flapdoodle.reverse.Listener;
 import org.bson.Document;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -43,6 +45,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 
@@ -171,6 +174,34 @@ class EmbeddedMongoAutoConfigurationTests {
 		}
 	}
 
+	@Test
+	void withoutAuth() {
+		loadWithValidVersion();
+
+		try(MongoClient client = this.context.getBean(MongoClient.class)) {
+			ArrayList<String> collectionNames = client.getDatabase("test")
+				.listCollectionNames()
+				.into(new ArrayList<>());
+
+			assertThat(collectionNames).isEmpty();
+		}
+	}
+
+	@Test
+	void withAuth() {
+		loadWithValidVersion(
+			"spring.data.mongodb.username=user",
+			"spring.data.mongodb.password=passwd");
+
+		try(MongoClient client = this.context.getBean(MongoClient.class)) {
+			ArrayList<String> collectionNames = client.getDatabase("test")
+				.listCollectionNames()
+				.into(new ArrayList<>());
+			
+			assertThat(collectionNames).isEmpty();
+		}
+	}
+
 	private void assertVersionConfiguration(String configuredVersion, String expectedVersion) {
 		this.context = new AnnotationConfigApplicationContext();
 		TestPropertyValues.of("spring.data.mongodb.port=0").applyTo(this.context);
@@ -201,7 +232,7 @@ class EmbeddedMongoAutoConfigurationTests {
 		}
 		TestPropertyValues.of("de.flapdoodle.mongodb.embedded.version=3.5.5").applyTo(ctx);
 		TestPropertyValues.of(environment).applyTo(ctx);
-		ctx.register(EmbeddedMongoAutoConfiguration.class, MongoAutoConfiguration.class,
+		ctx.register(EmbeddedMongoAutoConfiguration.class, MongoAutoConfiguration.class, MongoDataAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
 		ctx.refresh();
 		return ctx;
@@ -227,7 +258,7 @@ class EmbeddedMongoAutoConfigurationTests {
 		@Bean(initMethod = "start", destroyMethod = "stop")
 		MongodWrapper customMongoServer() {
 			ProgressListener listener=new StandardConsoleProgressListener();
-			return new MongodWrapper(Mongod.instance().transitions(Version.V3_4_15), listener);
+			return new MongodWrapper(Mongod.instance().transitions(Version.V3_4_15), listener, Listener.typedBuilder().build());
 		}
 
 	}

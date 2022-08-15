@@ -24,6 +24,7 @@ import de.flapdoodle.checks.Preconditions;
 import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
 import de.flapdoodle.embed.process.io.progress.ProgressListener;
 import de.flapdoodle.embed.process.io.progress.ProgressListeners;
+import de.flapdoodle.reverse.Listener;
 import de.flapdoodle.reverse.StateID;
 import de.flapdoodle.reverse.TransitionWalker;
 import de.flapdoodle.reverse.Transitions;
@@ -34,20 +35,22 @@ public class MongodWrapper {
 
 	private final Transitions transitions;
 	private final Optional<ProgressListener> progressListener;
+	private final Listener stateChangeListener;
 	private TransitionWalker.ReachedState<RunningMongodProcess> runningMongo = null;
 
-	public MongodWrapper(Transitions transitions, ProgressListener progressListener) {
+	public MongodWrapper(Transitions transitions, ProgressListener progressListener, Listener stateChangeListener) {
 		this.transitions = transitions;
 		this.progressListener = Optional.of(progressListener);
+		this.stateChangeListener = stateChangeListener;
 	}
 
 	private void start() {
 		if (progressListener.isPresent()) {
 			try (ProgressListeners.RemoveProgressListener ignored = ProgressListeners.setProgressListener(progressListener.get())) {
-				runningMongo = transitions.walker().initState(StateID.of(RunningMongodProcess.class));
+				runningMongo = transitions.walker().initState(StateID.of(RunningMongodProcess.class), stateChangeListener);
 			}
 		} else {
-			runningMongo = transitions.walker().initState(StateID.of(RunningMongodProcess.class));
+			runningMongo = transitions.walker().initState(StateID.of(RunningMongodProcess.class), stateChangeListener);
 		}
 	}
 

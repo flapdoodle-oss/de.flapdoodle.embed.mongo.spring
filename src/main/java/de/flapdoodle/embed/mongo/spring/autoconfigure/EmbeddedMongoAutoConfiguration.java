@@ -20,7 +20,8 @@
  */
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
-import com.mongodb.MongoClientSettings;
+import com.mongodb.*;
+import com.mongodb.client.MongoDatabase;
 import de.flapdoodle.embed.mongo.commands.ImmutableMongodArguments;
 import de.flapdoodle.embed.mongo.commands.MongodArguments;
 import de.flapdoodle.embed.mongo.config.Net;
@@ -29,6 +30,7 @@ import de.flapdoodle.embed.mongo.distribution.IFeatureAwareVersion;
 import de.flapdoodle.embed.mongo.distribution.Versions;
 import de.flapdoodle.embed.mongo.transitions.ImmutableMongod;
 import de.flapdoodle.embed.mongo.transitions.Mongod;
+import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
 import de.flapdoodle.embed.process.distribution.Version.GenericVersion;
 import de.flapdoodle.embed.process.io.ProcessOutput;
 import de.flapdoodle.embed.process.io.Processors;
@@ -36,8 +38,12 @@ import de.flapdoodle.embed.process.io.Slf4jLevel;
 import de.flapdoodle.embed.process.io.progress.ProgressListener;
 import de.flapdoodle.embed.process.io.progress.Slf4jProgressListener;
 import de.flapdoodle.embed.process.runtime.Network;
-import de.flapdoodle.reverse.Transition;
+import de.flapdoodle.reverse.Listener;
+import de.flapdoodle.reverse.StateID;
 import de.flapdoodle.reverse.transitions.Start;
+import de.flapdoodle.types.ThrowingConsumer;
+import de.flapdoodle.types.Try;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -61,11 +67,12 @@ import org.springframework.data.mongodb.core.MongoClientFactoryBean;
 import org.springframework.data.mongodb.core.ReactiveMongoClientFactoryBean;
 import org.springframework.util.Assert;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for Embedded Mongo.
@@ -79,6 +86,7 @@ import java.util.Map;
 @Import({ EmbeddedMongoAutoConfiguration.EmbeddedMongoClientDependsOnBeanFactoryPostProcessor.class,
 	EmbeddedMongoAutoConfiguration.EmbeddedReactiveStreamsMongoClientDependsOnBeanFactoryPostProcessor.class })
 public class EmbeddedMongoAutoConfiguration {
+	private static Logger logger = LoggerFactory.getLogger(EmbeddedMongoAutoConfiguration.class);
 
 	private static final byte[] IP4_LOOPBACK_ADDRESS = { 127, 0, 0, 1 };
 
@@ -123,7 +131,66 @@ public class EmbeddedMongoAutoConfiguration {
 			.withNet(Start.to(Net.class).initializedWith(net))
 			.withProcessOutput(Start.to(ProcessOutput.class).initializedWith(processOutput));
 
-		return new MongodWrapper(mongod.transitions(version), progressListener);
+		return new MongodWrapper(mongod.transitions(version), progressListener, addAuthUserToDB(properties));
+	}
+
+	private static Listener addAuthUserToDB(MongoProperties properties) {
+		Listener.TypedListener.Builder typedBuilder = Listener.typedBuilder();
+		String username = properties.getUsername();
+		char[] password = properties.getPassword();
+		String databaseName = properties.getMongoClientDatabase();
+
+		if (username !=null && password !=null) {
+			typedBuilder.onStateReached(StateID.of(RunningMongodProcess.class), addAuthUserToDBCallback(username, password, databaseName));
+		}
+		return typedBuilder.build();
+	}
+
+	private static Consumer<RunningMongodProcess> addAuthUserToDBCallback(String username, char[] password, String databaseName) {
+		return runningMongodProcess -> {
+			try {
+				logger.info("enable "+username+" access for "+databaseName);
+
+				ServerAddress serverAddress = runningMongodProcess.getServerAddress();
+
+				String adminDatabaseName = "admin";
+				MongoClientOptions mongoClientOptions = MongoClientOptions.builder().build();
+
+				try (MongoClient client = new MongoClient(serverAddress)) {
+					if (!createUser(client.getDatabase(adminDatabaseName), username, password, "root")) {
+						throw new IllegalArgumentException("could not create "+username+" user in "+adminDatabaseName);
+					}
+				}
+
+				try (MongoClient client = new MongoClient(serverAddress, MongoCredential.createCredential(
+					username, adminDatabaseName, password
+				), mongoClientOptions)) {
+					if (!createUser(client.getDatabase(databaseName), username, password, "readWrite")) {
+						throw new IllegalArgumentException("could not create "+username+" in "+databaseName);
+					}
+				}
+
+				try (MongoClient client = new MongoClient(serverAddress, MongoCredential.createCredential(
+					username, "test", password
+				), mongoClientOptions)) {
+					// if this does not fail, setup is done
+					client.getDatabase(databaseName).listCollectionNames().into(new ArrayList<>());
+				}
+				logger.info("access for "+username+"@"+databaseName+" is enabled");
+			}
+			catch (UnknownHostException ux) {
+				throw new RuntimeException(ux);
+			}
+		};
+	}
+
+	private static boolean createUser(MongoDatabase db, String username, char[] password, String ... roles) {
+		Document result = db.runCommand(new Document()
+				.append("createUser", username)
+				.append("pwd", new String(password))
+				.append("roles", Arrays.asList(roles))
+		);
+		return result.get("ok", Double.class) >= 1.0;
 	}
 
 	@Bean
@@ -152,7 +219,7 @@ public class EmbeddedMongoAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public MongodArguments mongodArguments(EmbeddedMongoProperties embeddedProperties) {
+	public MongodArguments mongodArguments(EmbeddedMongoProperties embeddedProperties, MongoProperties mongoProperties) {
 		ImmutableMongodArguments.Builder builder = MongodArguments.builder();
 		EmbeddedMongoProperties.Storage storage = embeddedProperties.getStorage();
 
@@ -160,6 +227,9 @@ public class EmbeddedMongoAutoConfiguration {
 			String replSetName = storage.getReplSetName();
 			int oplogSize = (storage.getOplogSize() != null) ? (int) storage.getOplogSize().toMegabytes() : 0;
 			builder.replication(Storage.of(replSetName, oplogSize));
+		}
+		if (mongoProperties.getUsername()!=null && mongoProperties.getPassword()!=null) {
+			builder.auth(true);
 		}
 
 		return builder.build();
