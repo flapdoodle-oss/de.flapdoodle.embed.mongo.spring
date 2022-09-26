@@ -46,6 +46,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -82,6 +83,12 @@ class EmbeddedMongoAutoConfigurationTests {
 	@Test
 	void customVersion() {
 		String version = Version.V3_4_15.asInDownloadPath();
+		assertVersionConfiguration(version, version);
+	}
+
+	@Test
+	void mongodb6() {
+		String version = Version.V6_0_1.asInDownloadPath();
 		assertVersionConfiguration(version, version);
 	}
 
@@ -202,6 +209,22 @@ class EmbeddedMongoAutoConfigurationTests {
 		}
 	}
 
+	@Test
+	void mongoDb6withAuth() {
+		loadWithValidVersion(
+			"spring.data.mongodb.username=user",
+			"spring.data.mongodb.password=passwd",
+			"de.flapdoodle.mongodb.embedded.version=6.0.1");
+
+		try(MongoClient client = this.context.getBean(MongoClient.class)) {
+			ArrayList<String> collectionNames = client.getDatabase("test")
+				.listCollectionNames()
+				.into(new ArrayList<>());
+
+			assertThat(collectionNames).isEmpty();
+		}
+	}
+
 	private void assertVersionConfiguration(String configuredVersion, String expectedVersion) {
 		this.context = new AnnotationConfigApplicationContext();
 		TestPropertyValues.of("spring.data.mongodb.port=0").applyTo(this.context);
@@ -230,7 +253,9 @@ class EmbeddedMongoAutoConfigurationTests {
 		if (config != null) {
 			ctx.register(config);
 		}
-		TestPropertyValues.of("de.flapdoodle.mongodb.embedded.version=3.5.5").applyTo(ctx);
+		if (!Arrays.asList(environment).stream().anyMatch(it -> it.startsWith("de.flapdoodle.mongodb.embedded.version"))) {
+			TestPropertyValues.of("de.flapdoodle.mongodb.embedded.version=3.5.5").applyTo(ctx);
+		}
 		TestPropertyValues.of(environment).applyTo(ctx);
 		ctx.register(EmbeddedMongoAutoConfiguration.class, MongoAutoConfiguration.class, MongoDataAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
