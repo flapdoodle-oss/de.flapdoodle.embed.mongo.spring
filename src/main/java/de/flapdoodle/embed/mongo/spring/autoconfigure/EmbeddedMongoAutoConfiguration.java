@@ -41,8 +41,6 @@ import de.flapdoodle.embed.process.runtime.Network;
 import de.flapdoodle.reverse.Listener;
 import de.flapdoodle.reverse.StateID;
 import de.flapdoodle.reverse.transitions.Start;
-import de.flapdoodle.types.ThrowingConsumer;
-import de.flapdoodle.types.Try;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +65,6 @@ import org.springframework.data.mongodb.core.MongoClientFactoryBean;
 import org.springframework.data.mongodb.core.ReactiveMongoClientFactoryBean;
 import org.springframework.util.Assert;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -142,6 +139,7 @@ public class EmbeddedMongoAutoConfiguration {
 
 		if (username !=null && password !=null) {
 			typedBuilder.onStateReached(StateID.of(RunningMongodProcess.class), addAuthUserToDBCallback(username, password, databaseName));
+			typedBuilder.onStateTearDown(StateID.of(RunningMongodProcess.class), sendShutdown(username, password, databaseName));
 		}
 		return typedBuilder.build();
 	}
@@ -177,6 +175,29 @@ public class EmbeddedMongoAutoConfiguration {
 					client.getDatabase(databaseName).listCollectionNames().into(new ArrayList<>());
 				}
 				logger.info("access for "+username+"@"+databaseName+" is enabled");
+			}
+			catch (UnknownHostException ux) {
+				throw new RuntimeException(ux);
+			}
+		};
+	}
+
+	private static Consumer<RunningMongodProcess> sendShutdown(String username, char[] password, String databaseName) {
+		return runningMongodProcess -> {
+			try {
+				logger.info("enable "+username+" access for "+databaseName+" - shutdown database");
+				ServerAddress serverAddress = runningMongodProcess.getServerAddress();
+
+				String adminDatabaseName = "admin";
+				MongoClientOptions mongoClientOptions = MongoClientOptions.builder().build();
+
+				try (MongoClient client = new MongoClient(serverAddress, MongoCredential.createCredential(
+					username, adminDatabaseName, password
+				), mongoClientOptions)) {
+					client.getDatabase(adminDatabaseName).runCommand(new Document()
+						.append("shutdown", 1));
+				}
+				logger.info("access for "+username+"@"+databaseName+" is enabled - shutdown done");
 			}
 			catch (UnknownHostException ux) {
 				throw new RuntimeException(ux);
