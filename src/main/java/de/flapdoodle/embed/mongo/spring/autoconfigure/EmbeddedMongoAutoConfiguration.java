@@ -128,7 +128,12 @@ public class EmbeddedMongoAutoConfiguration {
 			.withNet(Start.to(Net.class).initializedWith(net))
 			.withProcessOutput(Start.to(ProcessOutput.class).initializedWith(processOutput));
 
-		return new MongodWrapper(mongod.transitions(version), progressListener, addAuthUserToDB(properties));
+		if (progressListener!=null) {
+			mongod = ImmutableMongod.copyOf(mongod)
+				.withProgressListener(Start.to(ProgressListener.class).initializedWith(progressListener));
+		}
+
+		return new MongodWrapper(mongod.transitions(version), addAuthUserToDB(properties));
 	}
 
 	private static Listener addAuthUserToDB(MongoProperties properties) {
