@@ -37,7 +37,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
-import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -282,8 +281,7 @@ class EmbeddedMongoAutoConfigurationTests {
 
 		@Bean(initMethod = "start", destroyMethod = "stop")
 		MongodWrapper customMongoServer() {
-			ProgressListener listener=new StandardConsoleProgressListener();
-			return new MongodWrapper(Mongod.instance().transitions(Version.V3_4_15), listener, Listener.typedBuilder().build());
+			return new MongodWrapper(Mongod.instance().transitions(Version.V3_4_15), Listener.typedBuilder().build());
 		}
 
 	}
