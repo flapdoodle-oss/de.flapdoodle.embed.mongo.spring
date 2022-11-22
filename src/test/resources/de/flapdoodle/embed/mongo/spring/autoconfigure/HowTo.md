@@ -26,3 +26,4 @@ ${secondIsolation}
 ## Test migration
 
 You should change the mongodb relevant prefix in your config files from `${noop.legacyPrefix}` to '${noop.prefix}'.
+You must not mix `${noop.legacyPrefix}` to '${noop.prefix}'.
