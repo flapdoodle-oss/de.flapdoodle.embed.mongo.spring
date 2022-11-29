@@ -23,6 +23,33 @@ configuration you must annotate your test with `@DirtiesContext` so that this te
 ${secondIsolation}
 ```
 
+## Transactions
+
+To enable transactions with spring data, there is one minimal setup. Imagine you have an person repository:                 
+
+```java
+${transaction.repository}
+```
+
+... which is called inside this service:
+
+```java
+${transaction.service}
+```
+
+Then you must enable an MongoTransactionManager:
+
+```java
+${transaction.config}
+```
+
+... and if we call the service from test, some calls will succeed and others will fail so that
+the transaction is not committed:
+
+```java
+${transaction.test}
+```
+
 ## Config Prefix
 
 Use '${noop.prefix}' as prefix in your config files.

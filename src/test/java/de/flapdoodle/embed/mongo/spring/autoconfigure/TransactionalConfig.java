@@ -39,15 +39,9 @@ public class TransactionalConfig {
 	}
 
 	@Bean
-	BeanPostProcessor mongodArgumentsPostProcessor() {
-		return new TypedBeanPostProcessor<>(MongodArguments.class, TransactionalConfig::enableTransaction, Function.identity());
-	}
-
-	private static MongodArguments enableTransaction(MongodArguments src) {
+	MongodArguments mongodArguments() {
 		return MongodArguments.builder()
-			.from(src)
 			.replication(Storage.of("test", 10))
-			.useNoJournal(false)
 			.build();
 	}
 }

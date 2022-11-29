@@ -23,11 +23,11 @@ package de.flapdoodle.embed.mongo.spring.autoconfigure;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import de.flapdoodle.embed.mongo.commands.MongodArguments;
+import de.flapdoodle.embed.mongo.commands.ServerAddress;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.IFeatureAwareVersion;
 import de.flapdoodle.embed.mongo.packageresolver.Feature;
@@ -59,25 +59,10 @@ public class SyncClientServerFactory extends AbstractServerFactory {
 	}
 
 	MongodWrapper createWrapper(
-		ApplicationContext context,
-		EmbeddedMongoProperties embeddedProperties,
-		ImmutableMongod immutableMongod,
-		MongodArguments mongodArguments,
-		ProcessOutput processOutput,
-		ProgressListener progressListener
-	) throws IOException {
-		IFeatureAwareVersion version = determineVersion("de.flapdoodle", embeddedProperties.getVersion());
-
-		Integer configuredPort = properties.getPort();
-
-		Net net = net(configuredPort);
-
-		if (configuredPort == null || configuredPort == 0) {
-			setEmbeddedPort(context, net.getPort());
-		}
-
-		Mongod mongod = mongod(immutableMongod, mongodArguments, processOutput, net, progressListener);
-
+		IFeatureAwareVersion version,
+		Mongod mongod,
+		MongodArguments mongodArguments
+	) {
 		return new MongodWrapper(
 			mongod.transitions(version),
 			addAuthUserToDB(properties),
@@ -85,11 +70,11 @@ public class SyncClientServerFactory extends AbstractServerFactory {
 		);
 	}
 
-	private static MongoClient client(de.flapdoodle.embed.mongo.commands.ServerAddress serverAddress) {
+	private static MongoClient client(ServerAddress serverAddress) {
 		return MongoClients.create("mongodb://"+serverAddress);
 	}
 
-	private static MongoClient client(de.flapdoodle.embed.mongo.commands.ServerAddress serverAddress, MongoCredential credential) {
+	private static MongoClient client(ServerAddress serverAddress, MongoCredential credential) {
 		return MongoClients.create(MongoClientSettings.builder()
 			.applyConnectionString(new ConnectionString("mongodb://"+serverAddress))
 			.credential(credential)
@@ -121,8 +106,6 @@ public class SyncClientServerFactory extends AbstractServerFactory {
 		return runningMongodProcess -> {
 			try {
 				logger.info("enable "+username+" access for "+databaseName);
-
-				ServerAddress serverAddress = serverAddress(runningMongodProcess.getServerAddress());
 
 				String adminDatabaseName = "admin";
 
@@ -159,7 +142,6 @@ public class SyncClientServerFactory extends AbstractServerFactory {
 		return runningMongodProcess -> {
 			try {
 				logger.info("enable "+username+" access for "+databaseName+" - shutdown database");
-				ServerAddress serverAddress = serverAddress(runningMongodProcess.getServerAddress());
 
 				String adminDatabaseName = "admin";
 
@@ -175,10 +157,6 @@ public class SyncClientServerFactory extends AbstractServerFactory {
 				throw new RuntimeException(ux);
 			}
 		};
-	}
-
-	private static ServerAddress serverAddress(de.flapdoodle.embed.mongo.commands.ServerAddress serverAddress) {
-		return new ServerAddress(serverAddress.getHost(), serverAddress.getPort());
 	}
 
 	private static boolean createUser(MongoDatabase db, String username, char[] password, String ... roles) {

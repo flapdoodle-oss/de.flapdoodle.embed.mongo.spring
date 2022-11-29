@@ -40,7 +40,6 @@ import de.flapdoodle.embed.process.io.progress.ProgressListener;
 import de.flapdoodle.reverse.Listener;
 import de.flapdoodle.reverse.StateID;
 import org.bson.Document;
-import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -65,25 +64,10 @@ public class ReactiveClientServerFactory extends AbstractServerFactory {
 	}
 
 	MongodWrapper createWrapper(
-		ApplicationContext context,
-		EmbeddedMongoProperties embeddedProperties,
-		ImmutableMongod immutableMongod,
-		MongodArguments mongodArguments,
-		ProcessOutput processOutput,
-		ProgressListener progressListener
-	) throws IOException {
-		IFeatureAwareVersion version = determineVersion("de.flapdoodle", embeddedProperties.getVersion());
-
-		Integer configuredPort = properties.getPort();
-
-		Net net = net(configuredPort);
-
-		if (configuredPort == null || configuredPort == 0) {
-			setEmbeddedPort(context, net.getPort());
-		}
-
-		Mongod mongod = mongod(immutableMongod, mongodArguments, processOutput, net, progressListener);
-
+		IFeatureAwareVersion version,
+		Mongod mongod,
+		MongodArguments mongodArguments
+	) {
 		return new MongodWrapper(
 			mongod.transitions(version),
 			addAuthUserToDB(properties),
@@ -97,8 +81,7 @@ public class ReactiveClientServerFactory extends AbstractServerFactory {
 		if (mongodArguments.replication().isPresent() && version.enabled(Feature.RS_INITIATE)) {
 			builder.onStateReached(StateID.of(RunningMongodProcess.class), runningMongodProcess -> {
 				try {
-					ServerAddress serverAddress = runningMongodProcess.getServerAddress();
-					try (MongoClient client = MongoClients.create("mongodb://" + serverAddress)) {
+					try (MongoClient client = client(runningMongodProcess.getServerAddress())) {
 						get(client.getDatabase("admin")
 							.runCommand(Document.parse("{replSetInitiate: {}}")));
 					}
@@ -122,25 +105,19 @@ public class ReactiveClientServerFactory extends AbstractServerFactory {
 
 				String adminDatabaseName = "admin";
 
-				try (MongoClient client = MongoClients.create("mongodb://" + serverAddress)) {
+				try (MongoClient client = client(serverAddress)) {
 					if (!createUser(client.getDatabase(adminDatabaseName), username, password, "root")) {
 						throw new IllegalArgumentException("could not create "+username+" user in "+adminDatabaseName);
 					}
 				}
 
-				try (MongoClient client = MongoClients.create(MongoClientSettings.builder()
-						.applyConnectionString(new ConnectionString("mongodb://" + serverAddress))
-						.credential(MongoCredential.createCredential(username, adminDatabaseName, password))
-					.build())) {
+				try (MongoClient client = client(serverAddress,MongoCredential.createCredential(username, adminDatabaseName, password))) {
 					if (!createUser(client.getDatabase(databaseName), username, password, "readWrite")) {
 						throw new IllegalArgumentException("could not create "+username+" in "+databaseName);
 					}
 				}
 
-				try (MongoClient client = MongoClients.create(MongoClientSettings.builder()
-					.applyConnectionString(new ConnectionString("mongodb://" + serverAddress))
-					.credential(MongoCredential.createCredential(username, "test", password))
-					.build())) {
+				try (MongoClient client = client(serverAddress,MongoCredential.createCredential(username, "test", password))) {
 					// if this does not fail, setup is done
 					Preconditions.checkNotNull(client.getDatabase(databaseName).getName(),"something went wrong");
 				}
@@ -161,10 +138,7 @@ public class ReactiveClientServerFactory extends AbstractServerFactory {
 
 				String adminDatabaseName = "admin";
 
-				try (MongoClient client = MongoClients.create(MongoClientSettings.builder()
-					.applyConnectionString(new ConnectionString("mongodb://" + serverAddress))
-					.credential(MongoCredential.createCredential(username, adminDatabaseName, password)).build())) {
-
+				try (MongoClient client = client(serverAddress,MongoCredential.createCredential(username, adminDatabaseName, password))) {
 					get(client.getDatabase(adminDatabaseName).runCommand(new Document()
 						.append("shutdown", 1)));
 				}
@@ -175,6 +149,18 @@ public class ReactiveClientServerFactory extends AbstractServerFactory {
 			}
 		};
 	}
+
+	private static MongoClient client(ServerAddress serverAddress) {
+		return MongoClients.create("mongodb://"+serverAddress);
+	}
+
+	private static MongoClient client(ServerAddress serverAddress, MongoCredential credential) {
+		return MongoClients.create(MongoClientSettings.builder()
+			.applyConnectionString(new ConnectionString("mongodb://"+serverAddress))
+			.credential(credential)
+			.build());
+	}
+
 
 	private static boolean createUser(MongoDatabase db, String username, char[] password, String ... roles) {
 		Publisher<Document> result = db.runCommand(new Document()
