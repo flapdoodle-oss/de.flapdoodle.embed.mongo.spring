@@ -345,8 +345,8 @@
         <junit.version>5.9.1</junit.version>
         <!-- eclipse apt switch -->
         <m2e.apt.activation>jdt_apt</m2e.apt.activation>
-        <spring.boot.version>2.7.4</spring.boot.version>
-        <spring.boot.configuration-processor>2.7.4</spring.boot.configuration-processor>
+        <spring.boot.version>2.7.5</spring.boot.version>
+        <spring.boot.configuration-processor>2.7.5</spring.boot.configuration-processor>
     </properties>
 
     <dependencies>
@@ -396,7 +396,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>4.0.6-beta</version>
+            <version>4.0.9-beta</version>
         </dependency>
 
         <dependency>
@@ -438,13 +438,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <version>3.12.11</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-mongodb</artifactId>
             <version>3.4.5</version>
@@ -454,6 +447,27 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-reactivestreams</artifactId>
+            <version>4.1.0</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>3.4.14</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-core</artifactId>
+            <version>4.1.0</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
             <version>4.1.0</version>
             <scope>provided</scope>
             <optional>true</optional>
