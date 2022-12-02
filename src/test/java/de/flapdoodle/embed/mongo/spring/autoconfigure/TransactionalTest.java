@@ -35,9 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest(
 	properties = "de.flapdoodle.mongodb.embedded.version=5.0.5"
 )
-@EnableAutoConfiguration(
-	exclude = org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class
-)
+@EnableAutoConfiguration()
 @TestPropertySource(properties = "property=C")
 @DirtiesContext
 public class TransactionalTest {

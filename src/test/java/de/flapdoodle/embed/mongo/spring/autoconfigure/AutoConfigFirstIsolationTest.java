@@ -32,9 +32,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataMongoTest(
-	excludeAutoConfiguration = org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class
-)
+@DataMongoTest()
 @TestPropertySource(properties = "property=A")
 @ExtendWith(SpringExtension.class)
 @DirtiesContext

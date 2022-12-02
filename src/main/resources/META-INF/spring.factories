@@ -1,5 +1,5 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration
+#org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+#de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration
 
-org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo=\
-de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration
+#org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo=\
+#de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration

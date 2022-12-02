@@ -21,6 +21,7 @@
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
 import com.mongodb.MongoClientSettings;
+import com.mongodb.client.MongoClient;
 import de.flapdoodle.embed.mongo.commands.ImmutableMongodArguments;
 import de.flapdoodle.embed.mongo.commands.MongodArguments;
 import de.flapdoodle.embed.mongo.config.Net;
@@ -40,15 +41,17 @@ import de.flapdoodle.reverse.transitions.Start;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.boot.autoconfigure.AbstractDependsOnBeanFactoryPostProcessor;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.data.mongo.MongoClientDependsOnBeanFactoryPostProcessor;
-import org.springframework.boot.autoconfigure.data.mongo.ReactiveStreamsMongoClientDependsOnBeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
+import org.springframework.boot.autoconfigure.mongo.MongoReactiveAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -71,11 +74,14 @@ import java.util.function.Function;
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for Embedded Mongo.
  *
- * copy of @{@link org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration}
+ * copy of spring 2.7.x @{@link org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration}
  */
-@Configuration(proxyBeanMethods = false)
+//@Configuration(proxyBeanMethods = false)
+@AutoConfiguration(before = {
+	MongoAutoConfiguration.class, MongoReactiveAutoConfiguration.class
+})
 @EnableConfigurationProperties({ MongoProperties.class, EmbeddedMongoProperties.class })
-@AutoConfigureBefore({ MongoAutoConfiguration.class, org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class })
+@AutoConfigureBefore({ MongoAutoConfiguration.class, MongoReactiveAutoConfiguration.class })
 @ConditionalOnClass({ MongoClientSettings.class, Mongod.class })
 @Import({
 	EmbeddedMongoAutoConfiguration.EmbeddedMongoClientDependsOnBeanFactoryPostProcessor.class,
@@ -95,6 +101,7 @@ public class EmbeddedMongoAutoConfiguration {
 			MongoProperties properties,
 			Mongod mongod,
 			MongodArguments mongodArguments) {
+
 			return new SyncClientServerFactory(properties)
 				.createWrapper(version, mongod, mongodArguments);
 		}
@@ -132,13 +139,31 @@ public class EmbeddedMongoAutoConfiguration {
 	}
 
 	@Bean
+	public BeanPostProcessor setHostAndPortToMongoProperties() {
+		return new TypedBeanPostProcessor<>(MongoProperties.class, (MongoProperties it) -> {
+			try {
+				Net net = net(it, it.getPort());
+				it.setHost(net.getServerAddress().getHostName());
+				it.setPort(it.getPort());
+				return it;
+			}
+			catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}, Function.identity());
+	}
+
+	@Bean
 	public Net net(ApplicationContext context, MongoProperties properties) throws IOException {
 		Integer configuredPort = properties.getPort();
 		Net net = net(properties, configuredPort);
 
-		if (configuredPort == null || configuredPort == 0) {
-			setEmbeddedPort(context, net.getPort());
-		}
+		// TODO hack
+		properties.setPort(net.getPort());
+		properties.setHost(net.getServerAddress().getHostName());
+//		if (configuredPort == null || configuredPort == 0) {
+//			setEmbeddedPort(context, net.getPort());
+//		}
 
 		return net;
 	}
@@ -238,10 +263,10 @@ public class EmbeddedMongoAutoConfiguration {
 	 */
 	@ConditionalOnClass({ com.mongodb.client.MongoClient.class, MongoClientFactoryBean.class })
 	static class EmbeddedMongoClientDependsOnBeanFactoryPostProcessor
-		extends MongoClientDependsOnBeanFactoryPostProcessor {
+		extends AbstractDependsOnBeanFactoryPostProcessor {
 
-		EmbeddedMongoClientDependsOnBeanFactoryPostProcessor() {
-			super(MongodWrapper.class);
+		public EmbeddedMongoClientDependsOnBeanFactoryPostProcessor() {
+			super(MongoClient.class, MongoClientFactoryBean.class, MongodWrapper.class);
 		}
 
 	}
@@ -253,10 +278,10 @@ public class EmbeddedMongoAutoConfiguration {
 	 */
 	@ConditionalOnClass({ com.mongodb.reactivestreams.client.MongoClient.class, ReactiveMongoClientFactoryBean.class })
 	static class EmbeddedReactiveStreamsMongoClientDependsOnBeanFactoryPostProcessor
-		extends ReactiveStreamsMongoClientDependsOnBeanFactoryPostProcessor {
+		extends AbstractDependsOnBeanFactoryPostProcessor {
 
-		EmbeddedReactiveStreamsMongoClientDependsOnBeanFactoryPostProcessor() {
-			super(MongodWrapper.class);
+		public EmbeddedReactiveStreamsMongoClientDependsOnBeanFactoryPostProcessor() {
+			super(com.mongodb.reactivestreams.client.MongoClient.class, ReactiveMongoClientFactoryBean.class, MongodWrapper.class);
 		}
 	}
 
@@ -264,29 +289,29 @@ public class EmbeddedMongoAutoConfiguration {
 		return LoggerFactory.getLogger(EmbeddedMongoAutoConfiguration.class.getPackage().getName() + ".EmbeddedMongo");
 	}
 
-	private static void setEmbeddedPort(ApplicationContext context, int port) {
-		setPortProperty(context, port);
-	}
+//	private static void setEmbeddedPort(ApplicationContext context, int port) {
+//		setPortProperty(context, port);
+//	}
 
-	private static void setPortProperty(ApplicationContext currentContext, int port) {
-		if (currentContext instanceof ConfigurableApplicationContext) {
-			MutablePropertySources sources = ((ConfigurableApplicationContext) currentContext).getEnvironment()
-				.getPropertySources();
-			getMongoPorts(sources).put("local.mongo.port", port);
-		}
-		if (currentContext.getParent() != null) {
-			setPortProperty(currentContext.getParent(), port);
-		}
-	}
+//	private static void setPortProperty(ApplicationContext currentContext, int port) {
+//		if (currentContext instanceof ConfigurableApplicationContext) {
+//			MutablePropertySources sources = ((ConfigurableApplicationContext) currentContext).getEnvironment()
+//				.getPropertySources();
+//			getMongoPorts(sources).put("local.mongo.port", port);
+//		}
+//		if (currentContext.getParent() != null) {
+//			setPortProperty(currentContext.getParent(), port);
+//		}
+//	}
 	
-	@SuppressWarnings("unchecked")
-	private static Map<String, Object> getMongoPorts(MutablePropertySources sources) {
-		PropertySource<?> propertySource = sources.get("mongo.ports");
-		if (propertySource == null) {
-			propertySource = new MapPropertySource("mongo.ports", new HashMap<>());
-			sources.addFirst(propertySource);
-		}
-		return (Map<String, Object>) propertySource.getSource();
-	}
+//	@SuppressWarnings("unchecked")
+//	private static Map<String, Object> getMongoPorts(MutablePropertySources sources) {
+//		PropertySource<?> propertySource = sources.get("mongo.ports");
+//		if (propertySource == null) {
+//			propertySource = new MapPropertySource("mongo.ports", new HashMap<>());
+//			sources.addFirst(propertySource);
+//		}
+//		return (Map<String, Object>) propertySource.getSource();
+//	}
 
 }

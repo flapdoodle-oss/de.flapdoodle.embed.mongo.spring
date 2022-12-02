@@ -4,9 +4,7 @@ You must disable the auto configuration provided by spring by disabling the spri
 auto configuration class:
 
 ```java
-@DataMongoTest(
-  excludeAutoConfiguration = org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class
-)
+@DataMongoTest()
 @ExtendWith(SpringExtension.class)
 public class AutoConfigTest {
   @Test
@@ -22,9 +20,7 @@ Per default there is just one mongodb instance running. In case you need test is
 with `@TestPropertySource` as in this example:
 
 ```java
-@DataMongoTest(
-  excludeAutoConfiguration = org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class
-)
+@DataMongoTest()
 @TestPropertySource(properties = "property=A")
 @ExtendWith(SpringExtension.class)
 @DirtiesContext
@@ -44,9 +40,7 @@ The tests with the same configuration will share their instance. If you want to 
 configuration you must annotate your test with `@DirtiesContext` so that this test will have his own mongodb:
 
 ```java
-@DataMongoTest(
-  excludeAutoConfiguration = org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class
-)
+@DataMongoTest()
 @TestPropertySource(properties = "property=A")
 @ExtendWith(SpringExtension.class)
 @DirtiesContext
@@ -125,9 +119,7 @@ the transaction is not committed:
 @SpringBootTest(
   properties = "de.flapdoodle.mongodb.embedded.version=5.0.5"
 )
-@EnableAutoConfiguration(
-  exclude = org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class
-)
+@EnableAutoConfiguration()
 @TestPropertySource(properties = "property=C")
 @DirtiesContext
 public class TransactionalTest {

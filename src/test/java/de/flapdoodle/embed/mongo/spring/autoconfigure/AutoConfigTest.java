@@ -28,9 +28,7 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@DataMongoTest(
-	excludeAutoConfiguration = org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class
-)
+@DataMongoTest()
 @ExtendWith(SpringExtension.class)
 public class AutoConfigTest {
 	@Test
