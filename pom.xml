@@ -13,7 +13,7 @@
     <groupId>de.flapdoodle.embed</groupId>
     <artifactId>de.flapdoodle.embed.mongo.spring30x</artifactId>
     <name>Flapdoodle Embedded MongoDB Spring Integration</name>
-    <version>4.2.1-beta-SNAPSHOT</version>
+    <version>4.0.0-beta-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>flapdoodle embedded mongo spring 3.0.x integration</description>
 
