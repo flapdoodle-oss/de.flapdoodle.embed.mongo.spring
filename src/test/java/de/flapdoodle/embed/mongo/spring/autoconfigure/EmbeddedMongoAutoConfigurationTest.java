@@ -24,11 +24,13 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import de.flapdoodle.embed.mongo.commands.MongodArguments;
+import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.config.Storage;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.mongo.transitions.Mongod;
 import de.flapdoodle.embed.process.io.progress.ProgressListener;
 import de.flapdoodle.embed.process.io.progress.StandardConsoleProgressListener;
+import de.flapdoodle.embed.process.runtime.Network;
 import de.flapdoodle.reverse.Listener;
 import org.bson.Document;
 import org.junit.jupiter.api.AfterEach;
@@ -47,6 +49,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -58,7 +62,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Tests for {@link EmbeddedMongoAutoConfiguration}.
  *
- * copy of @{@link org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfigurationTests}
+ * copy of spring 2.7 @{@link org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfigurationTests}
  */
 class EmbeddedMongoAutoConfigurationTests {
 
@@ -100,50 +104,33 @@ class EmbeddedMongoAutoConfigurationTests {
 	}
 	
 	@Test
-	@Disabled
 	void useRandomPortByDefault() {
 		loadWithValidVersion();
 		assertThat(this.context.getBeansOfType(MongoClient.class)).hasSize(1);
 		MongoClient client = this.context.getBean(MongoClient.class);
-		// TODO this hack is replaced by an other one
-		Integer mongoPort = Integer.valueOf(this.context.getEnvironment().getProperty("local.mongo.port"));
-		assertThat(getPort(client)).isEqualTo(mongoPort);
+		MongoProperties properties = this.context.getBean(MongoProperties.class);
+		assertThat(getPort(client)).isEqualTo(properties.getPort());
 	}
 
 	@Test
-	@Disabled
 	void specifyPortToZeroAllocateRandomPort() {
 		loadWithValidVersion("spring.data.mongodb.port=0");
 		assertThat(this.context.getBeansOfType(MongoClient.class)).hasSize(1);
 		MongoClient client = this.context.getBean(MongoClient.class);
-		// TODO this hack is replaced by an other one
-		Integer mongoPort = Integer.valueOf(this.context.getEnvironment().getProperty("local.mongo.port"));
-		assertThat(getPort(client)).isEqualTo(mongoPort);
+		MongoProperties properties = this.context.getBean(MongoProperties.class);
+		assertThat(getPort(client)).isEqualTo(properties.getPort());
+		assertThat(getPort(client)).isNotEqualTo(0);
 	}
 
 	@Test
-	@Disabled
-	void randomlyAllocatedPortIsAvailableWhenCreatingMongoClient() {
-		loadWithValidVersion(MongoClientConfiguration.class);
+	void useSpecifiedPort() throws IOException {
+		int port = Network.freeServerPort(Network.getLocalHost());
+		loadWithValidVersion("spring.data.mongodb.port="+port);
+		assertThat(this.context.getBeansOfType(MongoClient.class)).hasSize(1);
 		MongoClient client = this.context.getBean(MongoClient.class);
-		// TODO this hack is replaced by an other one
-		Integer mongoPort = Integer.valueOf(this.context.getEnvironment().getProperty("local.mongo.port"));
-		assertThat(getPort(client)).isEqualTo(mongoPort);
-	}
-
-	@Test
-	@Disabled
-	void portIsAvailableInParentContext() {
-		try (ConfigurableApplicationContext parent = new AnnotationConfigApplicationContext()) {
-			TestPropertyValues.of("de.flapdoodle.mongodb.embedded.version=3.5.5").applyTo(parent);
-			parent.refresh();
-			this.context = new AnnotationConfigApplicationContext();
-			this.context.setParent(parent);
-			this.context.register(EmbeddedMongoAutoConfiguration.class, MongoClientConfiguration.class);
-			this.context.refresh();
-			// TODO this hack is replaced by an other one
-			assertThat(parent.getEnvironment().getProperty("local.mongo.port")).isNotNull();
-		}
+		MongoProperties properties = this.context.getBean(MongoProperties.class);
+		assertThat(getPort(client)).isEqualTo(properties.getPort());
+		assertThat(getPort(client)).isEqualTo(port);
 	}
 
 	@Test
