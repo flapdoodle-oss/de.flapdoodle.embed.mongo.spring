@@ -51,15 +51,9 @@ import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.boot.autoconfigure.mongo.MongoReactiveAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.MutablePropertySources;
-import org.springframework.core.env.PropertySource;
 import org.springframework.data.mongodb.core.MongoClientFactoryBean;
 import org.springframework.data.mongodb.core.ReactiveMongoClientFactoryBean;
 import org.springframework.util.Assert;
@@ -67,8 +61,6 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -158,12 +150,15 @@ public class EmbeddedMongoAutoConfiguration {
 		Integer configuredPort = properties.getPort();
 		Net net = net(properties, configuredPort);
 
-		// TODO hack
+		// HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK
+		//
+		// IMHO this is a hack, one should NOT modify properties on injection
+		// ... but as I did not find a better way (BeanPostProcessor did not work
+		// for MongoProperties) I leave it as it is.
+		//
+		// HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK
 		properties.setPort(net.getPort());
 		properties.setHost(net.getServerAddress().getHostName());
-//		if (configuredPort == null || configuredPort == 0) {
-//			setEmbeddedPort(context, net.getPort());
-//		}
 
 		return net;
 	}
@@ -288,30 +283,4 @@ public class EmbeddedMongoAutoConfiguration {
 	private static Logger logger() {
 		return LoggerFactory.getLogger(EmbeddedMongoAutoConfiguration.class.getPackage().getName() + ".EmbeddedMongo");
 	}
-
-//	private static void setEmbeddedPort(ApplicationContext context, int port) {
-//		setPortProperty(context, port);
-//	}
-
-//	private static void setPortProperty(ApplicationContext currentContext, int port) {
-//		if (currentContext instanceof ConfigurableApplicationContext) {
-//			MutablePropertySources sources = ((ConfigurableApplicationContext) currentContext).getEnvironment()
-//				.getPropertySources();
-//			getMongoPorts(sources).put("local.mongo.port", port);
-//		}
-//		if (currentContext.getParent() != null) {
-//			setPortProperty(currentContext.getParent(), port);
-//		}
-//	}
-	
-//	@SuppressWarnings("unchecked")
-//	private static Map<String, Object> getMongoPorts(MutablePropertySources sources) {
-//		PropertySource<?> propertySource = sources.get("mongo.ports");
-//		if (propertySource == null) {
-//			propertySource = new MapPropertySource("mongo.ports", new HashMap<>());
-//			sources.addFirst(propertySource);
-//		}
-//		return (Map<String, Object>) propertySource.getSource();
-//	}
-
 }
