@@ -65,10 +65,7 @@ import java.util.function.Function;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for Embedded Mongo.
- *
- * copy of spring 2.7.x @{@link org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration}
  */
-//@Configuration(proxyBeanMethods = false)
 @AutoConfiguration(before = {
 	MongoAutoConfiguration.class, MongoReactiveAutoConfiguration.class
 })
