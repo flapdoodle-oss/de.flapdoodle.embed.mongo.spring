@@ -11,14 +11,14 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 
 ### Maven
 
-[![Maven Central](https://img.shields.io/maven-central/v/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring27x.svg)](https://maven-badges.herokuapp.com/maven-central/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring27x)
+[![Maven Central](https://img.shields.io/maven-central/v/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring30x.svg)](https://maven-badges.herokuapp.com/maven-central/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring30x)
 
 Snapshots (Repository http://oss.sonatype.org/content/repositories/snapshots)
 
 	<dependency>
 		<groupId>de.flapdoodle.embed</groupId>
-		<artifactId>de.flapdoodle.embed.mongo.spring27x</artifactId>
-		<version>4.2.1-beta-SNAPSHOT</version>
+		<artifactId>de.flapdoodle.embed.mongo.spring30x</artifactId>
+		<version>4.0.2-beta-SNAPSHOT</version>
 	</dependency>
 
 ### Usage
