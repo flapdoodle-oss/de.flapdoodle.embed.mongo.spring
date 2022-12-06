@@ -34,7 +34,12 @@ public class HowToTest {
 	public static Recording recording= Recorder.with("HowTo.md", TabSize.spaces(2))
 		.sourceCodeOf("autoConfigClass", AutoConfigTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
 		.sourceCodeOf("firstIsolation", AutoConfigFirstIsolationTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
-		.sourceCodeOf("secondIsolation", AutoConfigSecondIsolationTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim);
+		.sourceCodeOf("secondIsolation", AutoConfigSecondIsolationTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		.sourceCodeOf("transaction.test", TransactionalTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		.sourceCodeOf("transaction.config", TransactionalConfig.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		.sourceCodeOf("transaction.service", PersonService.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		.sourceCodeOf("transaction.repository", PersonRepository.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		;
 
 	@Test
 	public void noop() {

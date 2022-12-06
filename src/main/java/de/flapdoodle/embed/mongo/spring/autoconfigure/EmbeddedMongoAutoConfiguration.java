@@ -20,8 +20,7 @@
  */
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
-import com.mongodb.*;
-import com.mongodb.client.MongoDatabase;
+import com.mongodb.MongoClientSettings;
 import de.flapdoodle.embed.mongo.commands.ImmutableMongodArguments;
 import de.flapdoodle.embed.mongo.commands.MongodArguments;
 import de.flapdoodle.embed.mongo.config.Net;
@@ -30,20 +29,17 @@ import de.flapdoodle.embed.mongo.distribution.IFeatureAwareVersion;
 import de.flapdoodle.embed.mongo.distribution.Versions;
 import de.flapdoodle.embed.mongo.transitions.ImmutableMongod;
 import de.flapdoodle.embed.mongo.transitions.Mongod;
-import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
-import de.flapdoodle.embed.process.distribution.Version.GenericVersion;
+import de.flapdoodle.embed.process.distribution.Version;
 import de.flapdoodle.embed.process.io.ProcessOutput;
 import de.flapdoodle.embed.process.io.Processors;
 import de.flapdoodle.embed.process.io.Slf4jLevel;
 import de.flapdoodle.embed.process.io.progress.ProgressListener;
 import de.flapdoodle.embed.process.io.progress.Slf4jProgressListener;
 import de.flapdoodle.embed.process.runtime.Network;
-import de.flapdoodle.reverse.Listener;
-import de.flapdoodle.reverse.StateID;
 import de.flapdoodle.reverse.transitions.Start;
-import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -68,161 +64,119 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for Embedded Mongo.
- * 
+ *
  * copy of @{@link org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration}
  */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties({ MongoProperties.class, EmbeddedMongoProperties.class })
-@AutoConfigureBefore({MongoAutoConfiguration.class, org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class })
+@AutoConfigureBefore({ MongoAutoConfiguration.class, org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class })
 @ConditionalOnClass({ MongoClientSettings.class, Mongod.class })
-@Import({ EmbeddedMongoAutoConfiguration.EmbeddedMongoClientDependsOnBeanFactoryPostProcessor.class,
-	EmbeddedMongoAutoConfiguration.EmbeddedReactiveStreamsMongoClientDependsOnBeanFactoryPostProcessor.class })
+@Import({
+	EmbeddedMongoAutoConfiguration.EmbeddedMongoClientDependsOnBeanFactoryPostProcessor.class,
+	EmbeddedMongoAutoConfiguration.EmbeddedReactiveStreamsMongoClientDependsOnBeanFactoryPostProcessor.class,
+})
 public class EmbeddedMongoAutoConfiguration {
-	private static Logger logger = LoggerFactory.getLogger(EmbeddedMongoAutoConfiguration.class);
-
 	private static final byte[] IP4_LOOPBACK_ADDRESS = { 127, 0, 0, 1 };
-
 	private static final byte[] IP6_LOOPBACK_ADDRESS = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
 
-	private final MongoProperties properties;
+	@ConditionalOnClass({ com.mongodb.client.MongoClient.class, MongoClientFactoryBean.class })
+	static class SyncClientServerWrapperConfig {
 
-	public EmbeddedMongoAutoConfiguration(MongoProperties properties) {
-		this.properties = properties;
-	}
-
-	private InetAddress getHost() throws UnknownHostException {
-		if (this.properties.getHost() == null) {
-			return InetAddress.getByAddress(Network.localhostIsIPv6() ? IP6_LOOPBACK_ADDRESS : IP4_LOOPBACK_ADDRESS);
+		@Bean(initMethod = "start", destroyMethod = "stop")
+		@ConditionalOnMissingBean
+		public MongodWrapper syncClientServerWrapper(
+			IFeatureAwareVersion version,
+			MongoProperties properties,
+			Mongod mongod,
+			MongodArguments mongodArguments) {
+			return new SyncClientServerFactory(properties)
+				.createWrapper(version, mongod, mongodArguments);
 		}
-		return InetAddress.getByName(this.properties.getHost());
+
 	}
 
-	@Bean(initMethod = "start", destroyMethod = "stop")
-	@ConditionalOnMissingBean
-	public MongodWrapper embeddedMongod(
-		ApplicationContext context, EmbeddedMongoProperties embeddedProperties,
-		ImmutableMongod immutableMongod,
-		MongodArguments mongodArguments,
-		ProcessOutput processOutput,
-		ProgressListener progressListener
-	) throws IOException {
-		IFeatureAwareVersion version = determineVersion("de.flapdoodle", embeddedProperties.getVersion());
+	@ConditionalOnClass({ com.mongodb.reactivestreams.client.MongoClient.class, ReactiveMongoClientFactoryBean.class })
+	static class ReactiveClientServerWrapperConfig {
 
-		Integer configuredPort = this.properties.getPort();
+		@Bean(initMethod = "start", destroyMethod = "stop")
+		@ConditionalOnMissingBean
+		public MongodWrapper reactiveClientServerWrapper(
+			IFeatureAwareVersion version,
+			MongoProperties properties,
+			Mongod mongod,
+			MongodArguments mongodArguments) {
+			return new ReactiveClientServerFactory(properties)
+				.createWrapper(version, mongod, mongodArguments);
+		}
+	}
 
-		Net net = (configuredPort != null && configuredPort > 0)
-			? Net.of(getHost().getHostAddress(), configuredPort, Network.localhostIsIPv6())
-			: Net.of(getHost().getHostAddress(), Network.freeServerPort(getHost()), Network.localhostIsIPv6());
+	@Bean
+	public IFeatureAwareVersion version(EmbeddedMongoProperties embeddedProperties) {
+		return determineVersion("de.flapdoodle", embeddedProperties.getVersion());
+	}
+
+	private static IFeatureAwareVersion determineVersion(String prefix, String version) {
+		Assert.state(version != null, "Set the " + prefix + ".mongodb.embedded.version property or "
+			+ "define your own " + IFeatureAwareVersion.class.getSimpleName() + " bean to use embedded MongoDB");
+		return Versions.withFeatures(createEmbeddedMongoVersion(version));
+	}
+
+	private static Version.GenericVersion createEmbeddedMongoVersion(String version) {
+		return Version.of(version);
+	}
+
+	@Bean
+	public Net net(ApplicationContext context, MongoProperties properties) throws IOException {
+		Integer configuredPort = properties.getPort();
+		Net net = net(properties, configuredPort);
 
 		if (configuredPort == null || configuredPort == 0) {
 			setEmbeddedPort(context, net.getPort());
 		}
 
-		Mongod mongod = immutableMongod
-			.withMongodArguments(Start.to(MongodArguments.class).initializedWith(mongodArguments))
-			.withNet(Start.to(Net.class).initializedWith(net))
-			.withProcessOutput(Start.to(ProcessOutput.class).initializedWith(processOutput));
+		return net;
+	}
 
-		if (progressListener!=null) {
-			mongod = ImmutableMongod.copyOf(mongod)
-				.withProgressListener(Start.to(ProgressListener.class).initializedWith(progressListener));
+	private static InetAddress getHost(MongoProperties properties) throws UnknownHostException {
+		if (properties.getHost() == null) {
+			return InetAddress.getByAddress(Network.localhostIsIPv6()
+				? IP6_LOOPBACK_ADDRESS
+				: IP4_LOOPBACK_ADDRESS);
 		}
-
-		return new MongodWrapper(mongod.transitions(version), addAuthUserToDB(properties));
+		return InetAddress.getByName(properties.getHost());
 	}
 
-	private static Listener addAuthUserToDB(MongoProperties properties) {
-		Listener.TypedListener.Builder typedBuilder = Listener.typedBuilder();
-		String username = properties.getUsername();
-		char[] password = properties.getPassword();
-		String databaseName = properties.getMongoClientDatabase();
+	private static Net net(MongoProperties properties, Integer configuredPort) throws IOException {
+		InetAddress host = getHost(properties);
 
-		if (username !=null && password !=null) {
-			typedBuilder.onStateReached(StateID.of(RunningMongodProcess.class), addAuthUserToDBCallback(username, password, databaseName));
-			typedBuilder.onStateTearDown(StateID.of(RunningMongodProcess.class), sendShutdown(username, password, databaseName));
-		}
-		return typedBuilder.build();
-	}
-
-	private static Consumer<RunningMongodProcess> addAuthUserToDBCallback(String username, char[] password, String databaseName) {
-		return runningMongodProcess -> {
-			try {
-				logger.info("enable "+username+" access for "+databaseName);
-
-				ServerAddress serverAddress = runningMongodProcess.getServerAddress();
-
-				String adminDatabaseName = "admin";
-				MongoClientOptions mongoClientOptions = MongoClientOptions.builder().build();
-
-				try (MongoClient client = new MongoClient(serverAddress)) {
-					if (!createUser(client.getDatabase(adminDatabaseName), username, password, "root")) {
-						throw new IllegalArgumentException("could not create "+username+" user in "+adminDatabaseName);
-					}
-				}
-
-				try (MongoClient client = new MongoClient(serverAddress, MongoCredential.createCredential(
-					username, adminDatabaseName, password
-				), mongoClientOptions)) {
-					if (!createUser(client.getDatabase(databaseName), username, password, "readWrite")) {
-						throw new IllegalArgumentException("could not create "+username+" in "+databaseName);
-					}
-				}
-
-				try (MongoClient client = new MongoClient(serverAddress, MongoCredential.createCredential(
-					username, "test", password
-				), mongoClientOptions)) {
-					// if this does not fail, setup is done
-					client.getDatabase(databaseName).listCollectionNames().into(new ArrayList<>());
-				}
-				logger.info("access for "+username+"@"+databaseName+" is enabled");
-			}
-			catch (UnknownHostException ux) {
-				throw new RuntimeException(ux);
-			}
-		};
-	}
-
-	private static Consumer<RunningMongodProcess> sendShutdown(String username, char[] password, String databaseName) {
-		return runningMongodProcess -> {
-			try {
-				logger.info("enable "+username+" access for "+databaseName+" - shutdown database");
-				ServerAddress serverAddress = runningMongodProcess.getServerAddress();
-
-				String adminDatabaseName = "admin";
-				MongoClientOptions mongoClientOptions = MongoClientOptions.builder().build();
-
-				try (MongoClient client = new MongoClient(serverAddress, MongoCredential.createCredential(
-					username, adminDatabaseName, password
-				), mongoClientOptions)) {
-					client.getDatabase(adminDatabaseName).runCommand(new Document()
-						.append("shutdown", 1));
-				}
-				logger.info("access for "+username+"@"+databaseName+" is enabled - shutdown done");
-			}
-			catch (UnknownHostException ux) {
-				throw new RuntimeException(ux);
-			}
-		};
-	}
-
-	private static boolean createUser(MongoDatabase db, String username, char[] password, String ... roles) {
-		Document result = db.runCommand(new Document()
-				.append("createUser", username)
-				.append("pwd", new String(password))
-				.append("roles", Arrays.asList(roles))
-		);
-		return result.get("ok", Double.class) >= 1.0;
+		return (configuredPort != null && configuredPort > 0)
+			? Net.of(host.getHostAddress(), configuredPort, Network.localhostIsIPv6())
+			: Net.of(host.getHostAddress(), Network.freeServerPort(host), Network.localhostIsIPv6());
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public ImmutableMongod mongod() {
-		return ImmutableMongod.instance();
+	public Mongod mongod(MongodArguments mongodArguments, ProcessOutput processOutput, Net net,
+		ProgressListener progressListener) {
+
+		ImmutableMongod copy = Mongod.builder()
+			.mongodArguments(Start.to(MongodArguments.class).initializedWith(mongodArguments))
+			.net(Start.to(Net.class).initializedWith(net))
+			.processOutput(Start.to(ProcessOutput.class).initializedWith(processOutput))
+			.build();
+
+		if (progressListener != null) {
+			copy = copy
+				.withProgressListener(Start.to(ProgressListener.class).initializedWith(progressListener));
+		}
+
+		return copy;
 	}
 
 	@Bean
@@ -245,20 +199,37 @@ public class EmbeddedMongoAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public MongodArguments mongodArguments(EmbeddedMongoProperties embeddedProperties, MongoProperties mongoProperties) {
-		ImmutableMongodArguments.Builder builder = MongodArguments.builder();
+	public MongodArguments mongodArguments() {
+		return MongodArguments.defaults();
+	}
+
+	@Bean
+	public BeanPostProcessor fixTransactionAndAuth(EmbeddedMongoProperties embeddedProperties, MongoProperties mongoProperties) {
 		EmbeddedMongoProperties.Storage storage = embeddedProperties.getStorage();
 
-		if (storage != null && storage.getReplSetName() !=null ) {
-			String replSetName = storage.getReplSetName();
-			int oplogSize = (storage.getOplogSize() != null) ? (int) storage.getOplogSize().toMegabytes() : 0;
-			builder.replication(Storage.of(replSetName, oplogSize));
-		}
-		if (mongoProperties.getUsername()!=null && mongoProperties.getPassword()!=null) {
-			builder.auth(true);
-		}
+		return new TypedBeanPostProcessor<>(MongodArguments.class, src -> {
+			ImmutableMongodArguments.Builder builder = MongodArguments.builder()
+				.from(src);
 
-		return builder.build();
+			if (storage != null && storage.getReplSetName() != null && !src.replication().isPresent()) {
+				String replSetName = storage.getReplSetName();
+				int oplogSize = (storage.getOplogSize() != null) ? (int) storage.getOplogSize().toMegabytes() : 0;
+
+				builder
+					.replication(Storage.of(replSetName, oplogSize))
+					.useNoJournal(false);
+			} else {
+				if (src.replication().isPresent()) {
+					builder.useNoJournal(false);
+				}
+			}
+
+			if (mongoProperties.getUsername() != null && mongoProperties.getPassword() != null) {
+				builder.auth(true);
+			}
+
+			return builder.build();
+		}, Function.identity());
 	}
 
 	/**
@@ -289,19 +260,8 @@ public class EmbeddedMongoAutoConfiguration {
 		}
 	}
 
-
 	private static Logger logger() {
 		return LoggerFactory.getLogger(EmbeddedMongoAutoConfiguration.class.getPackage().getName() + ".EmbeddedMongo");
-	}
-
-	private static IFeatureAwareVersion determineVersion(String prefix, String version) {
-		Assert.state(version != null, "Set the "+prefix+".mongodb.embedded.version property or "
-			+ "define your own MongodConfig bean to use embedded MongoDB");
-		return Versions.withFeatures(createEmbeddedMongoVersion(version));
-	}
-
-	private static GenericVersion createEmbeddedMongoVersion(String version) {
-		return de.flapdoodle.embed.process.distribution.Version.of(version);
 	}
 
 	private static void setEmbeddedPort(ApplicationContext context, int port) {

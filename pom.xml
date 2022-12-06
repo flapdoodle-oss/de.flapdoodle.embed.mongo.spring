@@ -396,7 +396,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>4.0.6-beta</version>
+            <version>4.1.0</version>
         </dependency>
 
         <dependency>
@@ -438,13 +438,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <version>3.12.11</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-mongodb</artifactId>
             <version>3.4.5</version>
@@ -458,5 +451,38 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+        <!-- new -->
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>3.4.14</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <!-- new -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-core</artifactId>
+            <version>4.1.0</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>4.1.0</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <!-- old -->
+        <!--
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>3.12.11</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        -->
     </dependencies>
 </project>

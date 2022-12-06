@@ -75,7 +75,7 @@ class EmbeddedMongoAutoConfigurationTests {
 		this.context.register(MongoAutoConfiguration.class, MongoDataAutoConfiguration.class,
 			EmbeddedMongoAutoConfiguration.class);
 		assertThatThrownBy(() -> this.context.refresh()).hasRootCauseExactlyInstanceOf(IllegalStateException.class)
-			.hasRootCauseMessage("Set the de.flapdoodle.mongodb.embedded.version property or define your own MongodConfig "
+			.hasRootCauseMessage("Set the de.flapdoodle.mongodb.embedded.version property or define your own IFeatureAwareVersion "
 				+ "bean to use embedded MongoDB");
 	}
 
@@ -281,7 +281,6 @@ class EmbeddedMongoAutoConfigurationTests {
 
 		@Bean(initMethod = "start", destroyMethod = "stop")
 		MongodWrapper customMongoServer() {
-			ProgressListener listener=new StandardConsoleProgressListener();
 			return new MongodWrapper(Mongod.instance().transitions(Version.V3_4_15), Listener.typedBuilder().build());
 		}
 

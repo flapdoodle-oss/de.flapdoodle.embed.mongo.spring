@@ -22,27 +22,27 @@ package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
 import de.flapdoodle.checks.Preconditions;
 import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
-import de.flapdoodle.embed.process.io.progress.ProgressListener;
 import de.flapdoodle.reverse.Listener;
 import de.flapdoodle.reverse.StateID;
 import de.flapdoodle.reverse.TransitionWalker;
 import de.flapdoodle.reverse.Transitions;
 
-import java.util.Optional;
+import java.util.Arrays;
+import java.util.List;
 
 public class MongodWrapper {
 
 	private final Transitions transitions;
-	private final Listener stateChangeListener;
+	private final List<Listener> stateChangeListeners;
 	private TransitionWalker.ReachedState<RunningMongodProcess> runningMongo = null;
 
-	public MongodWrapper(Transitions transitions, Listener stateChangeListener) {
+	public MongodWrapper(Transitions transitions, Listener ... stateChangeListeners) {
 		this.transitions = transitions;
-		this.stateChangeListener = stateChangeListener;
+		this.stateChangeListeners = Arrays.asList(stateChangeListeners);
 	}
 
 	private void start() {
-		runningMongo = transitions.walker().initState(StateID.of(RunningMongodProcess.class), stateChangeListener);
+		runningMongo = transitions.walker().initState(StateID.of(RunningMongodProcess.class), stateChangeListeners.toArray(new Listener[0]));
 	}
 
 	private void stop() {
