@@ -90,7 +90,6 @@ public class EmbeddedMongoAutoConfiguration {
 			MongoProperties properties,
 			Mongod mongod,
 			MongodArguments mongodArguments) {
-
 			return new SyncClientServerFactory(properties)
 				.createWrapper(version, mongod, mongodArguments);
 		}
