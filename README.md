@@ -20,7 +20,7 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 	</dependency>
 
 If you are getting some older version (< 4.x.x) for 'de.flapdoodle.embed.mongo', you must add the
-dependency:
+dependency ( [![Maven Central](https://img.shields.io/maven-central/v/de.flapdoodle.embed/de.flapdoodle.embed.mongo.svg)](https://maven-badges.herokuapp.com/maven-central/de.flapdoodle.embed/de.flapdoodle.embed.mongo) ):
 
     <dependency>
          <groupId>de.flapdoodle.embed</groupId>
