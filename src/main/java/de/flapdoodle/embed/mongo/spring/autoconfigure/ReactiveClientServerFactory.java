@@ -43,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -74,14 +73,9 @@ public class ReactiveClientServerFactory extends AbstractServerFactory {
 
 		if (mongodArguments.replication().isPresent() && version.enabled(Feature.RS_INITIATE)) {
 			builder.onStateReached(StateID.of(RunningMongodProcess.class), runningMongodProcess -> {
-				try {
-					try (MongoClient client = client(runningMongodProcess.getServerAddress())) {
-						get(client.getDatabase("admin")
-							.runCommand(Document.parse("{replSetInitiate: {}}")));
-					}
-				}
-				catch (UnknownHostException e) {
-					throw new RuntimeException(e);
+				try (MongoClient client = client(runningMongodProcess.getServerAddress())) {
+					get(client.getDatabase("admin")
+						.runCommand(Document.parse("{replSetInitiate: {}}")));
 				}
 			});
 		}
@@ -92,55 +86,47 @@ public class ReactiveClientServerFactory extends AbstractServerFactory {
 	@Override
 	protected Consumer<RunningMongodProcess> addAuthUserToDBCallback(String username, char[] password, String databaseName) {
 		return runningMongodProcess -> {
-			try {
-				logger.info("enable "+username+" access for "+databaseName);
+			logger.info("enable "+username+" access for "+databaseName);
 
-				ServerAddress serverAddress = runningMongodProcess.getServerAddress();
+			ServerAddress serverAddress = runningMongodProcess.getServerAddress();
 
-				String adminDatabaseName = "admin";
+			String adminDatabaseName = "admin";
 
-				try (MongoClient client = client(serverAddress)) {
-					if (!createUser(client.getDatabase(adminDatabaseName), username, password, "root")) {
-						throw new IllegalArgumentException("could not create "+username+" user in "+adminDatabaseName);
-					}
+			try (MongoClient client = client(serverAddress)) {
+				if (!createUser(client.getDatabase(adminDatabaseName), username, password, "root")) {
+					throw new IllegalArgumentException("could not create "+username+" user in "+adminDatabaseName);
 				}
-
-				try (MongoClient client = client(serverAddress,MongoCredential.createCredential(username, adminDatabaseName, password))) {
-					if (!createUser(client.getDatabase(databaseName), username, password, "readWrite")) {
-						throw new IllegalArgumentException("could not create "+username+" in "+databaseName);
-					}
-				}
-
-				try (MongoClient client = client(serverAddress,MongoCredential.createCredential(username, "test", password))) {
-					// if this does not fail, setup is done
-					Preconditions.checkNotNull(client.getDatabase(databaseName).getName(),"something went wrong");
-				}
-				logger.info("access for "+username+"@"+databaseName+" is enabled");
 			}
-			catch (UnknownHostException ux) {
-				throw new RuntimeException(ux);
+
+			try (MongoClient client = client(serverAddress,MongoCredential.createCredential(username, adminDatabaseName, password))) {
+				if (!createUser(client.getDatabase(databaseName), username, password, "readWrite")) {
+					throw new IllegalArgumentException("could not create "+username+" in "+databaseName);
+				}
 			}
+
+			try (MongoClient client = client(serverAddress,MongoCredential.createCredential(username, "test", password))) {
+				// if this does not fail, setup is done
+				Preconditions.checkNotNull(client.getDatabase(databaseName).getName(),"something went wrong");
+			}
+			logger.info("access for "+username+"@"+databaseName+" is enabled");
 		};
 	}
 
 	@Override
 	protected Consumer<RunningMongodProcess> sendShutdown(String username, char[] password, String databaseName) {
 		return runningMongodProcess -> {
-			try {
-				logger.info("enable "+username+" access for "+databaseName+" - shutdown database");
-				ServerAddress serverAddress = runningMongodProcess.getServerAddress();
+			logger.info("enable "+username+" access for "+databaseName+" - shutdown database");
+			ServerAddress serverAddress = runningMongodProcess.getServerAddress();
 
-				String adminDatabaseName = "admin";
+			String adminDatabaseName = "admin";
 
-				try (MongoClient client = client(serverAddress,MongoCredential.createCredential(username, adminDatabaseName, password))) {
-					get(client.getDatabase(adminDatabaseName).runCommand(new Document()
-						.append("shutdown", 1)));
-				}
-				logger.info("access for "+username+"@"+databaseName+" is enabled - shutdown done");
+			try (MongoClient client = client(serverAddress,MongoCredential.createCredential(username, adminDatabaseName, password))) {
+				get(client.getDatabase(adminDatabaseName).runCommand(new Document()
+					.append("shutdown", 1).append("force", true)));
 			}
-			catch (UnknownHostException ux) {
-				throw new RuntimeException(ux);
-			}
+			logger.info("access for "+username+"@"+databaseName+" is enabled - shutdown done");
+
+			runningMongodProcess.shutDownCommandAlreadyExecuted();
 		};
 	}
 
