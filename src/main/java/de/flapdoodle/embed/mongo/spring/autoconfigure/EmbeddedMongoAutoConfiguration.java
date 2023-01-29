@@ -155,6 +155,11 @@ public class EmbeddedMongoAutoConfiguration {
 		// HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK
 		properties.setPort(net.getPort());
 		properties.setHost(net.getServerAddress().getHostName());
+		String uri = properties.getUri();
+		if (uri !=null) {
+			String database = properties.getMongoClientDatabase();
+			properties.setUri("mongodb://"+properties.getHost()+":"+properties.getPort()+"/"+database);
+		}
 
 		return net;
 	}
