@@ -9,6 +9,11 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 @DataMongoTest(
 	excludeAutoConfiguration = org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class
 )
@@ -20,6 +25,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class SpecifyMongoConnectionTest {
 	@Test
 	void example(@Autowired final MongoTemplate mongoTemplate) {
-		Assertions.assertThat(mongoTemplate.getDb()).isNotNull();
+		assertThat(mongoTemplate.getDb()).isNotNull();
+		ArrayList<String> names = mongoTemplate.getDb()
+			.listCollectionNames()
+			.into(new ArrayList<>());
+
+		assertThat(names).isEmpty();
 	}
 }
