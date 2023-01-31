@@ -19,3 +19,7 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 		<version>4.4.1</version>
 	</dependency>
 
+### Usage
+
+You might find an example for different use cases in this [documentation](HowTo.md). As this documentation is generated
+on each build by running this code, it should work as expected:)
