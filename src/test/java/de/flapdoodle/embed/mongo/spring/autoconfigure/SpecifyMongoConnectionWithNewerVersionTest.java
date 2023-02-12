@@ -37,10 +37,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 )
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(properties = {
-	"de.flapdoodle.mongodb.embedded.version=3.3.1"
+	"de.flapdoodle.mongodb.embedded.version=6.0.3"
 	,"spring.data.mongodb.uri=mongodb://localhost/test"
 })
-public class SpecifyMongoConnectionTest {
+public class SpecifyMongoConnectionWithNewerVersionTest {
 	@Test
 	void example(@Autowired final MongoTemplate mongoTemplate) {
 		assertThat(mongoTemplate.getDb()).isNotNull();
