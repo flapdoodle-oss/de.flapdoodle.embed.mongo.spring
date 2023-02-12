@@ -138,6 +138,27 @@ public class TransactionalTest {
 }
 ```
 
+## Custom Database Dir
+
+```java
+@AutoConfigureDataMongo
+@SpringBootTest(
+  properties = {
+    "de.flapdoodle.mongodb.embedded.databaseDir=${java.io.tmpdir}/customDir/${random.uuid}"
+  }
+)
+@EnableAutoConfiguration()
+@DirtiesContext
+public class CustomDatabaseDirTest {
+
+  @Test
+  void example(@Autowired final MongoTemplate mongoTemplate) {
+    Assertions.assertThat(mongoTemplate.getDb()).isNotNull();
+  }
+}
+```
+
+
 ## Config Prefix
 
 Use 'de.flapdoodle.mongodb.embedded' as prefix in your config files.

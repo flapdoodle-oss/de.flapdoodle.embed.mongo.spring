@@ -33,6 +33,8 @@ public class EmbeddedMongoProperties {
 	 */
 	private String version;
 
+	private String databaseDir;
+
 	private final EmbeddedMongoProperties.Storage storage = new EmbeddedMongoProperties.Storage();
 
 	/**
@@ -47,6 +49,14 @@ public class EmbeddedMongoProperties {
 		this.version = version;
 	}
 
+	public String getDatabaseDir() {
+		return databaseDir;
+	}
+
+	public void setDatabaseDir(String databaseDir) {
+		this.databaseDir = databaseDir;
+	}
+	
 	public EmbeddedMongoProperties.Storage getStorage() {
 		return this.storage;
 	}
@@ -54,10 +64,10 @@ public class EmbeddedMongoProperties {
 	@Override public String toString() {
 		return "EmbeddedMongoProperties{" +
 			"version='" + version + '\'' +
+			", databaseDir='" + databaseDir + '\'' +
 			", storage=" + storage +
 			'}';
 	}
-
 	public static class Storage {
 
 		/**

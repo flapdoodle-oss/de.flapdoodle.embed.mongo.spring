@@ -50,6 +50,13 @@ the transaction is not committed:
 ${transaction.test}
 ```
 
+## Custom Database Dir
+
+```java
+${customDatabaseDir}
+```
+
+
 ## Config Prefix
 
 Use '${noop.prefix}' as prefix in your config files.
