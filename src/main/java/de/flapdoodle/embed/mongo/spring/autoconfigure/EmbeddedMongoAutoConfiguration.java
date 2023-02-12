@@ -29,6 +29,7 @@ import de.flapdoodle.embed.mongo.distribution.IFeatureAwareVersion;
 import de.flapdoodle.embed.mongo.distribution.Versions;
 import de.flapdoodle.embed.mongo.transitions.ImmutableMongod;
 import de.flapdoodle.embed.mongo.transitions.Mongod;
+import de.flapdoodle.embed.mongo.types.DatabaseDir;
 import de.flapdoodle.embed.process.distribution.Version;
 import de.flapdoodle.embed.process.io.ProcessOutput;
 import de.flapdoodle.embed.process.io.Processors;
@@ -37,6 +38,7 @@ import de.flapdoodle.embed.process.io.progress.ProgressListener;
 import de.flapdoodle.embed.process.io.progress.Slf4jProgressListener;
 import de.flapdoodle.embed.process.runtime.Network;
 import de.flapdoodle.reverse.transitions.Start;
+import de.flapdoodle.types.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -64,6 +66,9 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -163,7 +168,7 @@ public class EmbeddedMongoAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public Mongod mongod(MongodArguments mongodArguments, ProcessOutput processOutput, Net net,
-		ProgressListener progressListener) {
+		ProgressListener progressListener, EmbeddedMongoProperties embeddedProperties) {
 
 		ImmutableMongod copy = Mongod.builder()
 			.mongodArguments(Start.to(MongodArguments.class).initializedWith(mongodArguments))
@@ -174,6 +179,15 @@ public class EmbeddedMongoAutoConfiguration {
 		if (progressListener != null) {
 			copy = copy
 				.withProgressListener(Start.to(ProgressListener.class).initializedWith(progressListener));
+		}
+
+		if (embeddedProperties.getDatabaseDir()!=null) {
+			Path databaseDirPath = Paths.get(embeddedProperties.getDatabaseDir());
+			if (!Files.exists(databaseDirPath)) {
+				Try.run(() -> Files.createDirectories(databaseDirPath));
+			}
+			copy = copy
+				.withDatabaseDir(Start.to(DatabaseDir.class).initializedWith(DatabaseDir.of(databaseDirPath)));
 		}
 
 		return copy;
