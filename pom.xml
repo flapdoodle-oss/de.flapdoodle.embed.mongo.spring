@@ -351,6 +351,7 @@
         <m2e.apt.activation>jdt_apt</m2e.apt.activation>
         <spring.boot.version>3.0.2</spring.boot.version>
         <spring.boot.configuration-processor>3.0.2</spring.boot.configuration-processor>
+        <mongodb-driver-version>4.9.0</mongodb-driver-version>
     </properties>
 
     <dependencies>
@@ -387,7 +388,7 @@
         <dependency>
             <groupId>de.flapdoodle.testdoc</groupId>
             <artifactId>de.flapdoodle.testdoc</artifactId>
-            <version>1.5.0</version>
+            <version>1.6.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -400,7 +401,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>4.4.0</version>
+            <version>4.5.0</version>
         </dependency>
 
         <dependency>
@@ -451,7 +452,7 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-reactivestreams</artifactId>
-            <version>4.8.2</version>
+            <version>${mongodb-driver-version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -465,14 +466,14 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-core</artifactId>
-            <version>4.8.2</version>
+            <version>${mongodb-driver-version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
-            <version>4.8.2</version>
+            <version>${mongodb-driver-version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
