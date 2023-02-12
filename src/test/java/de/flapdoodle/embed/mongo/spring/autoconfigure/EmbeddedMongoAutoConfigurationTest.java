@@ -26,8 +26,6 @@ import de.flapdoodle.embed.mongo.commands.MongodArguments;
 import de.flapdoodle.embed.mongo.config.Storage;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.mongo.transitions.Mongod;
-import de.flapdoodle.embed.process.io.progress.ProgressListener;
-import de.flapdoodle.embed.process.io.progress.StandardConsoleProgressListener;
 import de.flapdoodle.reverse.Listener;
 import org.bson.Document;
 import org.junit.jupiter.api.AfterEach;

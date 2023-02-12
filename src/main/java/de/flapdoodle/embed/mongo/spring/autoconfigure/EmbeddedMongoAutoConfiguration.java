@@ -278,7 +278,7 @@ public class EmbeddedMongoAutoConfiguration {
 			setPortProperty(currentContext.getParent(), port);
 		}
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	private static Map<String, Object> getMongoPorts(MutablePropertySources sources) {
 		PropertySource<?> propertySource = sources.get("mongo.ports");
