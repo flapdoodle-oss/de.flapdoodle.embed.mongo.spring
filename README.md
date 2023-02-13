@@ -23,3 +23,9 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 
 You might find an example for different use cases in this [documentation](HowTo.md). As this documentation is generated
 on each build by running this code, it should work as expected:)
+
+### Canary Project
+
+To see if all works as expected and as a playground for integration problems you may have a look at
+[flapdoodle embed mongo canary](https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo.canary). There you will
+find a minimal example for spring2.6.x, spring2.7.x and spring3.0.x (hint: spring3.0.x needs java17). 
