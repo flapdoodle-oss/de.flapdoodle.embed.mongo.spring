@@ -41,9 +41,10 @@ import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 
-public class SyncClientServerFactory extends AbstractServerFactory {
+public class SyncClientServerFactory extends AbstractServerFactory<MongoClient> {
 	private static Logger logger = LoggerFactory.getLogger(SyncClientServerFactory.class);
 
 	SyncClientServerFactory(MongoProperties properties) {
@@ -51,99 +52,21 @@ public class SyncClientServerFactory extends AbstractServerFactory {
 		logger.info("sync server factory");
 	}
 
-	MongodWrapper createWrapper(
-		IFeatureAwareVersion version,
-		Mongod mongod,
-		MongodArguments mongodArguments
-	) {
-		return new MongodWrapper(
-			mongod.transitions(version),
-			addAuthUserToDB(properties),
-			initReplicaSet(version, mongodArguments)
-		);
-	}
-
-	private static MongoClient client(ServerAddress serverAddress) {
+	protected MongoClient client(ServerAddress serverAddress) {
 		return MongoClients.create("mongodb://"+serverAddress);
 	}
 
-	private static MongoClient client(ServerAddress serverAddress, MongoCredential credential) {
+	protected MongoClient client(ServerAddress serverAddress, MongoCredential credential) {
 		return MongoClients.create(MongoClientSettings.builder()
 			.applyConnectionString(new ConnectionString("mongodb://"+serverAddress))
 			.credential(credential)
 			.build());
 	}
 
-	private static Listener initReplicaSet(IFeatureAwareVersion version, MongodArguments mongodArguments) {
-		Listener.TypedListener.Builder builder = Listener.typedBuilder();
-
-		if (mongodArguments.replication().isPresent() && version.enabled(Feature.RS_INITIATE)) {
-			builder.onStateReached(StateID.of(RunningMongodProcess.class), runningMongodProcess -> {
-				try (MongoClient client = client(runningMongodProcess.getServerAddress())) {
-					client.getDatabase("admin")
-						.runCommand(Document.parse("{replSetInitiate: {}}"));
-				}
-			});
+	protected Document resultOfAction(MongoClient client, MongoClientAction.Action action) {
+		if (action instanceof MongoClientAction.RunCommand) {
+			return client.getDatabase(action.database()).runCommand(((MongoClientAction.RunCommand) action).command());
 		}
-
-		return builder.build();
-	}
-
-	@Override
-	protected Consumer<RunningMongodProcess> addAuthUserToDBCallback(String username, char[] password, String databaseName) {
-		return runningMongodProcess -> {
-			logger.info("enable "+username+" access for "+databaseName);
-
-			String adminDatabaseName = "admin";
-
-			try (MongoClient client = client(runningMongodProcess.getServerAddress())) {
-				if (!createUser(client.getDatabase(adminDatabaseName), username, password, "root")) {
-					throw new IllegalArgumentException("could not create "+username+" user in "+adminDatabaseName);
-				}
-			}
-
-			try (MongoClient client = client(runningMongodProcess.getServerAddress(), MongoCredential.createCredential(
-				username, adminDatabaseName, password
-			))) {
-				if (!createUser(client.getDatabase(databaseName), username, password, "readWrite")) {
-					throw new IllegalArgumentException("could not create "+username+" in "+databaseName);
-				}
-			}
-
-			try (MongoClient client = client(runningMongodProcess.getServerAddress(), MongoCredential.createCredential(
-				username, "test", password
-			))) {
-				// if this does not fail, setup is done
-				client.getDatabase(databaseName).listCollectionNames().into(new ArrayList<>());
-			}
-			logger.info("access for "+username+"@"+databaseName+" is enabled");
-		};
-	}
-
-	@Override
-	protected Consumer<RunningMongodProcess> sendShutdown(String username, char[] password, String databaseName) {
-		return runningMongodProcess -> {
-			logger.info("enable "+username+" access for "+databaseName+" - shutdown database");
-
-			String adminDatabaseName = "admin";
-
-			try (MongoClient client = client(runningMongodProcess.getServerAddress(), MongoCredential.createCredential(
-				username, adminDatabaseName, password
-			))) {
-				client.getDatabase(adminDatabaseName).runCommand(new Document()
-					.append("shutdown", 1).append("force", true));
-			}
-			logger.info("access for "+username+"@"+databaseName+" is enabled - shutdown done");
-			runningMongodProcess.shutDownCommandAlreadyExecuted();
-		};
-	}
-
-	private static boolean createUser(MongoDatabase db, String username, char[] password, String ... roles) {
-		Document result = db.runCommand(new Document()
-			.append("createUser", username)
-			.append("pwd", new String(password))
-			.append("roles", Arrays.asList(roles))
-		);
-		return result.get("ok", Double.class) >= 1.0;
+		throw new IllegalArgumentException("Action not supported: "+action);
 	}
 }
