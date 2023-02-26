@@ -16,7 +16,7 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 	<dependency>
 		<groupId>de.flapdoodle.embed</groupId>
 		<artifactId>de.flapdoodle.embed.mongo.spring30x</artifactId>
-		<version>4.5.2</version>
+		<version>4.6.0</version>
 	</dependency>
 
 ### Usage
