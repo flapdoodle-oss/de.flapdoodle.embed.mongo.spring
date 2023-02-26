@@ -13,7 +13,7 @@
     <groupId>de.flapdoodle.embed</groupId>
     <artifactId>de.flapdoodle.embed.mongo.spring27x</artifactId>
     <name>Flapdoodle Embedded MongoDB Spring Integration</name>
-    <version>4.6.0</version>
+    <version>4.6.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>flapdoodle embedded mongo spring 2.7.x integration</description>
 
@@ -40,7 +40,7 @@
         <connection>scm:git:git@github.com:flapdoodle-oss/de.flapdoodle.embed.mongo.spring.git</connection>
         <developerConnection>scm:git:git@github.com:flapdoodle-oss/de.flapdoodle.embed.mongo.spring.git</developerConnection>
         <url>git@github.com:flapdoodle-oss/de.flapdoodle.embed.mongo.spring.git</url>
-        <tag>de.flapdoodle.embed.mongo.spring27x-4.6.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
