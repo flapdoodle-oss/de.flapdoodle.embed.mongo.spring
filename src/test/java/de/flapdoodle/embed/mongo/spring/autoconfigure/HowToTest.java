@@ -40,6 +40,7 @@ public class HowToTest {
 		.sourceCodeOf("transaction.service", PersonService.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
 		.sourceCodeOf("transaction.repository", PersonRepository.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
 		.sourceCodeOf("customDatabaseDir", CustomDatabaseDirTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		.sourceCodeOf("customizeMongod", CustomizeMongodTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
 		;
 
 	@Test

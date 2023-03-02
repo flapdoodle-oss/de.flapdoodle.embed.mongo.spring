@@ -168,6 +168,39 @@ public class CustomDatabaseDirTest {
 }
 ```
 
+## Customize Mongod
+
+If none of the other configuration options is enough, you can customize it further by adding a `BeanPostProcessor` or
+use a more typesafe implementation like `TypedBeanPostProcessor:
+
+```java
+@AutoConfigureDataMongo
+@SpringBootTest()
+@EnableAutoConfiguration
+@DirtiesContext
+public class CustomizeMongodTest {
+
+  @Test
+  void example(@Autowired final MongoTemplate mongoTemplate) {
+    assertThat(mongoTemplate.getDb()).isNotNull();
+  }
+
+  @Configuration
+  static class LocalConfig {
+
+    @Bean
+    public BeanPostProcessor customizeMongod() {
+      return TypedBeanPostProcessor.applyBeforeInitialization(Mongod.class, src -> {
+        return Mongod.builder()
+          .from(src)
+          .processOutput(Start.to(ProcessOutput.class)
+            .initializedWith(ProcessOutput.namedConsole("custom")))
+          .build();
+      });
+    }
+  }
+}
+```
 
 ## Config Prefix
 
