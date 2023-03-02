@@ -56,6 +56,14 @@ ${transaction.test}
 ${customDatabaseDir}
 ```
 
+## Customize Mongod
+
+If none of the other configuration options is enough, you can customize it further by adding a `BeanPostProcessor` or
+use a more typesafe implementation like `TypedBeanPostProcessor:
+
+```java
+${customizeMongod}
+```
 
 ## Config Prefix
 

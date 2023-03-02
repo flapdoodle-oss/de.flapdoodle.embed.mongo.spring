@@ -52,4 +52,8 @@ public class TypedBeanPostProcessor<T> implements BeanPostProcessor {
 		}
 		return bean;
 	}
+
+	public static <T> TypedBeanPostProcessor<T> applyBeforeInitialization(Class<T> type, Function<T, T> change) {
+		return new TypedBeanPostProcessor<>(type, change, Function.identity());
+	}
 }
