@@ -20,6 +20,16 @@
  */
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
+import de.flapdoodle.embed.mongo.spring.autoconfigure.customize.CustomizeMongodTest;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.customize.LocalConfig;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.simple.AutoConfigFirstIsolationTest;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.simple.AutoConfigSecondIsolationTest;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.simple.AutoConfigTest;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.simple.CustomDatabaseDirTest;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.transactions.PersonRepository;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.transactions.PersonService;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.transactions.TransactionalConfig;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.transactions.TransactionalTest;
 import de.flapdoodle.testdoc.Includes;
 import de.flapdoodle.testdoc.Recorder;
 import de.flapdoodle.testdoc.Recording;
@@ -41,6 +51,7 @@ public class HowToTest {
 		.sourceCodeOf("transaction.repository", PersonRepository.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
 		.sourceCodeOf("customDatabaseDir", CustomDatabaseDirTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
 		.sourceCodeOf("customizeMongod", CustomizeMongodTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		.sourceCodeOf("customizeMongod.config", LocalConfig.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
 		;
 
 	@Test

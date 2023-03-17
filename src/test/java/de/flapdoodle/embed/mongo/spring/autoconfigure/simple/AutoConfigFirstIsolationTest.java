@@ -18,7 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.embed.mongo.spring.autoconfigure;
+package de.flapdoodle.embed.mongo.spring.autoconfigure.simple;
 
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestPropertySource(properties = "property=A")
 @ExtendWith(SpringExtension.class)
 @DirtiesContext
-public class AutoConfigSecondIsolationTest {
+public class AutoConfigFirstIsolationTest {
 	@Test
 	void example(@Autowired final MongoTemplate mongoTemplate) {
 		mongoTemplate.getDb().createCollection("deleteMe");

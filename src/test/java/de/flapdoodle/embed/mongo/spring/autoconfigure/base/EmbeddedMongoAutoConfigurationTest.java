@@ -18,13 +18,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.embed.mongo.spring.autoconfigure;
+package de.flapdoodle.embed.mongo.spring.autoconfigure.base;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import de.flapdoodle.embed.mongo.commands.MongodArguments;
 import de.flapdoodle.embed.mongo.config.Storage;
 import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.MongodWrapper;
 import de.flapdoodle.embed.mongo.transitions.Mongod;
 import de.flapdoodle.reverse.Listener;
 import org.bson.Document;

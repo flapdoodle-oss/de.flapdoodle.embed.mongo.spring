@@ -18,23 +18,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.embed.mongo.spring.autoconfigure;
+package de.flapdoodle.embed.mongo.spring.autoconfigure.auth;
 
-import com.mongodb.client.ListCollectionsIterable;
-import de.flapdoodle.embed.mongo.commands.MongodArguments;
-import org.assertj.core.api.Assertions;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.customize.LocalConfig;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-
-import java.util.ArrayList;
+import org.springframework.test.context.ContextConfiguration;
 
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,11 +71,4 @@ public class AuthTest {
 					.extracting(c -> c.get("name")).isEqualTo("second")));
 	}
 
-	@Configuration
-	static class LocalConfig {
-		@Bean
-		public MongodArguments mongodArguments() {
-			return MongodArguments.defaults();
-		}
-	}
 }
