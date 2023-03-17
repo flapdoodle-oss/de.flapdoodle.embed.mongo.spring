@@ -18,30 +18,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.embed.mongo.spring.autoconfigure;
+package de.flapdoodle.embed.mongo.spring.autoconfigure.transactions;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@Service
-public class PersonService {
-
-	private PersonRepository repository;
-	
-	@Autowired
-	public PersonService(PersonRepository repository) {
-		this.repository = repository;
-	}
-
-	@Transactional
-	public void insert(String ... names) {
-		for (String name : names) {
-			repository.insert(new Person(name.substring(0, 1), name));
-		}
-	}
-
-	public long count() {
-		return repository.count();
-	}
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
 }

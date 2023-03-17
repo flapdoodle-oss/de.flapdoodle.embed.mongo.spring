@@ -18,15 +18,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.embed.mongo.spring.autoconfigure;
+package de.flapdoodle.embed.mongo.spring.autoconfigure.transactions;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
@@ -35,18 +33,23 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @AutoConfigureDataMongo
 @SpringBootTest(
-	properties = {
-		"de.flapdoodle.mongodb.embedded.databaseDir=${java.io.tmpdir}/customDir/${random.uuid}"
-	}
+	properties = "de.flapdoodle.mongodb.embedded.version=5.0.5"
 )
 @EnableAutoConfiguration(
 	exclude = org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class
 )
 @DirtiesContext
-public class CustomDatabaseDirTest {
+public class TransactionalTest {
 
 	@Test
-	void example(@Autowired final MongoTemplate mongoTemplate) {
-		Assertions.assertThat(mongoTemplate.getDb()).isNotNull();
+	void personExample(@Autowired PersonService service) {
+		service.insert("Klaus","Susi");
+
+		assertThat(service.count()).isEqualTo(2);
+
+		assertThatThrownBy(() -> service.insert("Helga","Hans"))
+			.isInstanceOf(RuntimeException.class);
+
+		assertThat(service.count()).isEqualTo(2);
 	}
 }

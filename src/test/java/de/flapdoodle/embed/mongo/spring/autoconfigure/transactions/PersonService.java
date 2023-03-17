@@ -18,27 +18,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.embed.mongo.spring.autoconfigure;
+package de.flapdoodle.embed.mongo.spring.autoconfigure.transactions;
 
-import de.flapdoodle.embed.mongo.commands.MongodArguments;
-import de.flapdoodle.embed.mongo.config.Storage;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.MongoDatabaseFactory;
-import org.springframework.data.mongodb.MongoTransactionManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@Configuration
-public class TransactionalConfig {
+@Service
+public class PersonService {
 
-	@Bean
-	MongoTransactionManager mongoTransactionManager(MongoDatabaseFactory dbFactory) {
-		return new MongoTransactionManager(dbFactory);
+	private PersonRepository repository;
+	
+	@Autowired
+	public PersonService(PersonRepository repository) {
+		this.repository = repository;
 	}
 
-	@Bean
-	MongodArguments mongodArguments() {
-		return MongodArguments.builder()
-			.replication(Storage.of("test", 10))
-			.build();
+	@Transactional
+	public void insert(String ... names) {
+		for (String name : names) {
+			repository.insert(new Person(name.substring(0, 1), name));
+		}
+	}
+
+	public long count() {
+		return repository.count();
 	}
 }
