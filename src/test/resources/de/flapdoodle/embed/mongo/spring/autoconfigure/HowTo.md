@@ -62,6 +62,10 @@ If none of the other configuration options is enough, you can customize it furth
 use a more typesafe implementation like `TypedBeanPostProcessor:
 
 ```java
+${customizeMongod.config}
+```
+
+```java
 ${customizeMongod}
 ```
 

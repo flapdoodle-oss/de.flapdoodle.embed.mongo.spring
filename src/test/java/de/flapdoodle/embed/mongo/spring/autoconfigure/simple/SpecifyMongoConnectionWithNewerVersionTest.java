@@ -18,21 +18,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.embed.mongo.spring.autoconfigure;
+package de.flapdoodle.embed.mongo.spring.autoconfigure.simple;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.ArrayList;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataMongoTest()
 @ExtendWith(SpringExtension.class)
-public class AutoConfigTest {
+@TestPropertySource(properties = {
+	"de.flapdoodle.mongodb.embedded.version=6.0.3"
+	,"spring.data.mongodb.uri=mongodb://localhost/test"
+})
+public class SpecifyMongoConnectionWithNewerVersionTest {
 	@Test
 	void example(@Autowired final MongoTemplate mongoTemplate) {
-		Assertions.assertThat(mongoTemplate.getDb()).isNotNull();
+		assertThat(mongoTemplate.getDb()).isNotNull();
+		ArrayList<String> names = mongoTemplate.getDb()
+			.listCollectionNames()
+			.into(new ArrayList<>());
+
+		assertThat(names).isEmpty();
 	}
 }

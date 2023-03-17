@@ -18,37 +18,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.embed.mongo.spring.autoconfigure;
+package de.flapdoodle.embed.mongo.spring.autoconfigure.customize;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ContextConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @AutoConfigureDataMongo
-@SpringBootTest(
-	properties = "de.flapdoodle.mongodb.embedded.version=5.0.5"
-)
-@EnableAutoConfiguration()
-@TestPropertySource(properties = "property=C")
+@SpringBootTest()
+@EnableAutoConfiguration
 @DirtiesContext
-public class TransactionalTest {
+public class CustomizeMongodTest {
 
 	@Test
-	void personExample(@Autowired PersonService service) {
-		service.insert("Klaus","Susi");
-
-		assertThat(service.count()).isEqualTo(2);
-
-		assertThatThrownBy(() -> service.insert("Helga","Hans"))
-			.isInstanceOf(RuntimeException.class);
-
-		assertThat(service.count()).isEqualTo(2);
+	void example(@Autowired final MongoTemplate mongoTemplate) {
+		assertThat(mongoTemplate.getDb()).isNotNull();
 	}
+
 }

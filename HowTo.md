@@ -120,7 +120,6 @@ the transaction is not committed:
   properties = "de.flapdoodle.mongodb.embedded.version=5.0.5"
 )
 @EnableAutoConfiguration()
-@TestPropertySource(properties = "property=C")
 @DirtiesContext
 public class TransactionalTest {
 
@@ -164,6 +163,23 @@ If none of the other configuration options is enough, you can customize it furth
 use a more typesafe implementation like `TypedBeanPostProcessor:
 
 ```java
+@Configuration
+public class LocalConfig {
+
+  @Bean
+  BeanPostProcessor customizeMongod() {
+    return TypedBeanPostProcessor.applyBeforeInitialization(Mongod.class, src -> {
+      return Mongod.builder()
+        .from(src)
+        .processOutput(Start.to(ProcessOutput.class)
+          .initializedWith(ProcessOutput.namedConsole("custom")))
+        .build();
+    });
+  }
+}
+```
+
+```java
 @AutoConfigureDataMongo
 @SpringBootTest()
 @EnableAutoConfiguration
@@ -175,20 +191,6 @@ public class CustomizeMongodTest {
     assertThat(mongoTemplate.getDb()).isNotNull();
   }
 
-  @Configuration
-  static class LocalConfig {
-
-    @Bean
-    public BeanPostProcessor customizeMongod() {
-      return TypedBeanPostProcessor.applyBeforeInitialization(Mongod.class, src -> {
-        return Mongod.builder()
-          .from(src)
-          .processOutput(Start.to(ProcessOutput.class)
-            .initializedWith(ProcessOutput.namedConsole("custom")))
-          .build();
-      });
-    }
-  }
 }
 ```
 

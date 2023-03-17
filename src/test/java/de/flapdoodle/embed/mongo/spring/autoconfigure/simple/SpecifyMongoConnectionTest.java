@@ -18,7 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.embed.mongo.spring.autoconfigure;
+package de.flapdoodle.embed.mongo.spring.autoconfigure.simple;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,10 +35,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataMongoTest()
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(properties = {
-	"de.flapdoodle.mongodb.embedded.version=6.0.3"
+	"de.flapdoodle.mongodb.embedded.version=3.6.5"
 	,"spring.data.mongodb.uri=mongodb://localhost/test"
 })
-public class SpecifyMongoConnectionWithNewerVersionTest {
+public class SpecifyMongoConnectionTest {
 	@Test
 	void example(@Autowired final MongoTemplate mongoTemplate) {
 		assertThat(mongoTemplate.getDb()).isNotNull();

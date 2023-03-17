@@ -18,34 +18,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.embed.mongo.spring.autoconfigure;
+package de.flapdoodle.embed.mongo.spring.autoconfigure.simple;
 
+import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataMongoTest()
+@TestPropertySource(properties = "property=A")
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(properties = {
-	"de.flapdoodle.mongodb.embedded.version=3.6.5"
-	,"spring.data.mongodb.uri=mongodb://localhost/test"
-})
-public class SpecifyMongoConnectionTest {
+@DirtiesContext
+public class AutoConfigSecondIsolationTest {
 	@Test
 	void example(@Autowired final MongoTemplate mongoTemplate) {
-		assertThat(mongoTemplate.getDb()).isNotNull();
-		ArrayList<String> names = mongoTemplate.getDb()
-			.listCollectionNames()
-			.into(new ArrayList<>());
+		mongoTemplate.getDb().createCollection("deleteMe");
+		long count = mongoTemplate.getDb().getCollection("deleteMe").countDocuments(Document.parse("{}"));
 
-		assertThat(names).isEmpty();
+		assertThat(mongoTemplate.getDb()).isNotNull();
+		assertThat(count).isEqualTo(0L);
 	}
 }

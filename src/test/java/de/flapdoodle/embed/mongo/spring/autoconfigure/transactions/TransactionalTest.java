@@ -18,47 +18,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.embed.mongo.spring.autoconfigure;
+package de.flapdoodle.embed.mongo.spring.autoconfigure.transactions;
 
-import de.flapdoodle.embed.mongo.transitions.Mongod;
-import de.flapdoodle.embed.process.io.ProcessOutput;
-import de.flapdoodle.reverse.transitions.Start;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @AutoConfigureDataMongo
-@SpringBootTest()
-@EnableAutoConfiguration
+@SpringBootTest(
+	properties = "de.flapdoodle.mongodb.embedded.version=5.0.5"
+)
+@EnableAutoConfiguration()
 @DirtiesContext
-public class CustomizeMongodTest {
+public class TransactionalTest {
 
 	@Test
-	void example(@Autowired final MongoTemplate mongoTemplate) {
-		assertThat(mongoTemplate.getDb()).isNotNull();
-	}
+	void personExample(@Autowired PersonService service) {
+		service.insert("Klaus","Susi");
 
-	@Configuration
-	static class LocalConfig {
+		assertThat(service.count()).isEqualTo(2);
 
-		@Bean
-		public BeanPostProcessor customizeMongod() {
-			return TypedBeanPostProcessor.applyBeforeInitialization(Mongod.class, src -> {
-				return Mongod.builder()
-					.from(src)
-					.processOutput(Start.to(ProcessOutput.class)
-						.initializedWith(ProcessOutput.namedConsole("custom")))
-					.build();
-			});
-		}
+		assertThatThrownBy(() -> service.insert("Helga","Hans"))
+			.isInstanceOf(RuntimeException.class);
+
+		assertThat(service.count()).isEqualTo(2);
 	}
 }

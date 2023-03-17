@@ -18,33 +18,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.embed.mongo.spring.autoconfigure;
+package de.flapdoodle.embed.mongo.spring.autoconfigure.simple;
 
-import org.assertj.core.api.Assertions;
+import org.bson.Document;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@AutoConfigureDataMongo
-@SpringBootTest(
-	properties = {
-		"de.flapdoodle.mongodb.embedded.databaseDir=${java.io.tmpdir}/customDir/${random.uuid}"
-	}
-)
-@EnableAutoConfiguration()
+@DataMongoTest()
+@TestPropertySource(properties = "property=A")
+@ExtendWith(SpringExtension.class)
 @DirtiesContext
-public class CustomDatabaseDirTest {
-
+public class AutoConfigFirstIsolationTest {
 	@Test
 	void example(@Autowired final MongoTemplate mongoTemplate) {
-		Assertions.assertThat(mongoTemplate.getDb()).isNotNull();
+		mongoTemplate.getDb().createCollection("deleteMe");
+		long count = mongoTemplate.getDb().getCollection("deleteMe").countDocuments(Document.parse("{}"));
+
+		assertThat(mongoTemplate.getDb()).isNotNull();
+		assertThat(count).isEqualTo(0L);
 	}
 }
