@@ -88,7 +88,13 @@ class EmbeddedMongoAutoConfigurationTests {
 
 	@Test
 	void mongodb6() {
-		String version = Version.V6_0_1.asInDownloadPath();
+		String version = Version.V6_0_6.asInDownloadPath();
+		assertVersionConfiguration(version, version);
+	}
+
+	@Test
+	void mongodb7() {
+		String version = Version.V7_0_0_RC2.asInDownloadPath();
 		assertVersionConfiguration(version, version);
 	}
 
