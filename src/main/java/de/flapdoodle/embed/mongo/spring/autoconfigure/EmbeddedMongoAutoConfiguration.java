@@ -117,6 +117,7 @@ public class EmbeddedMongoAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean
 	public IFeatureAwareVersion version(EmbeddedMongoProperties embeddedProperties) {
 		return determineVersion("de.flapdoodle", embeddedProperties.getVersion());
 	}
