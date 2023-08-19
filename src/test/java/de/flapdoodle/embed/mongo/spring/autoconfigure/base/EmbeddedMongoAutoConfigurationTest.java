@@ -82,7 +82,7 @@ class EmbeddedMongoAutoConfigurationTests {
 
 	@Test
 	void customVersion() {
-		String version = Version.V3_6_5.asInDownloadPath();
+		String version = Version.V4_4_5.asInDownloadPath();
 		assertVersionConfiguration(version, version);
 	}
 
@@ -100,7 +100,7 @@ class EmbeddedMongoAutoConfigurationTests {
 
 	@Test
 	void customUnknownVersion() {
-		assertVersionConfiguration("3.6.0", "3.6.0");
+		assertVersionConfiguration("4.4.0", "4.4.0");
 	}
 	
 	@Test
@@ -251,7 +251,7 @@ class EmbeddedMongoAutoConfigurationTests {
 			ctx.register(config);
 		}
 		if (!Arrays.asList(environment).stream().anyMatch(it -> it.startsWith("de.flapdoodle.mongodb.embedded.version"))) {
-			TestPropertyValues.of("de.flapdoodle.mongodb.embedded.version=3.6.5").applyTo(ctx);
+			TestPropertyValues.of("de.flapdoodle.mongodb.embedded.version=4.4.0").applyTo(ctx);
 		}
 		TestPropertyValues.of(environment).applyTo(ctx);
 		ctx.register(EmbeddedMongoAutoConfiguration.class, MongoAutoConfiguration.class, MongoDataAutoConfiguration.class,
@@ -279,7 +279,7 @@ class EmbeddedMongoAutoConfigurationTests {
 
 		@Bean(initMethod = "start", destroyMethod = "stop")
 		MongodWrapper customMongoServer() {
-			return new MongodWrapper(Mongod.instance().transitions(Version.V3_4_15), Listener.typedBuilder().build());
+			return new MongodWrapper(Mongod.instance().transitions(Version.V4_4_5), Listener.typedBuilder().build());
 		}
 
 	}
