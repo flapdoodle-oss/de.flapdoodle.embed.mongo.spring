@@ -188,7 +188,7 @@
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>3.0</version>
+                <version>4.2</version>
                 <configuration>
                     <!-- <basedir>${basedir}</basedir> -->
                     <header>${basedir}/src/etc/header.txt</header>
@@ -204,6 +204,7 @@
                         <exclude>src/etc/**</exclude>
                         <exclude>target/**</exclude>
                         <exclude>.clover/**</exclude>
+                        <exclude>src/main/resources/META-INF/spring.factories</exclude>
                     </excludes>
                     <useDefaultExcludes>true</useDefaultExcludes>
                     <!-- <mapping> <jwc>XML_STYLE</jwc> <application>XML_STYLE</application>
@@ -395,7 +396,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>4.9.0</version>
+            <version>4.9.2</version>
         </dependency>
         <dependency>
             <groupId>org.immutables</groupId>
