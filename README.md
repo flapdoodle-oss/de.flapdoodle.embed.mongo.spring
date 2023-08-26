@@ -2,7 +2,7 @@
 
 # Embedded MongoDB Spring Integration
 
-This is a replacement for the spring mongodb integration project. It is based on Spring 2.6.x. This version uses a
+This is a replacement for the spring mongodb integration project. It is based on Spring 2.5.x. This version uses a
 new version of [Embedded MongoDB](https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo/).
 
 ## License
@@ -11,11 +11,11 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 
 ### Maven
 
-[![Maven Central](https://img.shields.io/maven-central/v/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring26x.svg)](https://maven-badges.herokuapp.com/maven-central/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring26x)
+[![Maven Central](https://img.shields.io/maven-central/v/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring25x.svg)](https://maven-badges.herokuapp.com/maven-central/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring25x)
 
 	<dependency>
 		<groupId>de.flapdoodle.embed</groupId>
-		<artifactId>de.flapdoodle.embed.mongo.spring26x</artifactId>
+		<artifactId>de.flapdoodle.embed.mongo.spring25x</artifactId>
 		<version>4.9.2</version>
 	</dependency>
 
