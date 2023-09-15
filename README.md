@@ -4,7 +4,7 @@
 
 [![build](https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo.spring/actions/workflows/build.yml/badge.svg)](https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo.spring/actions/workflows/build.yml)
 
-This is an replacement for the spring mongodb integration project. It is based on Spring 2.7.x. This version uses a
+This is an spring mongodb integration project. This version uses a
 new version of [Embedded MongoDB](https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo/).
 
 ## License
@@ -13,12 +13,12 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 
 ### Maven
 
-[![Maven Central](https://img.shields.io/maven-central/v/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring30x.svg)](https://maven-badges.herokuapp.com/maven-central/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring30x)
+[![Maven Central](https://img.shields.io/maven-central/v/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring31x.svg)](https://maven-badges.herokuapp.com/maven-central/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring31x)
 
 	<dependency>
 		<groupId>de.flapdoodle.embed</groupId>
 		<artifactId>de.flapdoodle.embed.mongo.spring30x</artifactId>
-		<version>4.9.2</version>
+		<version>4.9.3</version>
 	</dependency>
 
 ### Usage
