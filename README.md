@@ -2,7 +2,7 @@
 
 # Embedded MongoDB Spring Integration
 
-This is an replacement for the spring mongodb integration project. It is based on Spring 2.7.x. This version uses a
+This is a replacement for the spring mongodb integration project. It is based on Spring 2.7.x. This version uses a
 new version of [Embedded MongoDB](https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo/).
 
 ## License
