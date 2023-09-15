@@ -2,6 +2,8 @@
 
 # Embedded MongoDB Spring Integration
 
+[![build](https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo.spring/actions/workflows/build.yml/badge.svg?branch=spring-3.0.x)](https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo.spring/actions/workflows/build.yml)
+
 This is a replacement for the spring mongodb integration project. It is based on Spring 2.7.x. This version uses a
 new version of [Embedded MongoDB](https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo/).
 
