@@ -52,10 +52,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.boot.autoconfigure.mongo.MongoReactiveAutoConfiguration;
+import org.springframework.boot.context.properties.ConfigurationPropertiesBindingPostProcessor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.MapPropertySource;
 import org.springframework.data.mongodb.core.MongoClientFactoryBean;
 import org.springframework.data.mongodb.core.ReactiveMongoClientFactoryBean;
 import org.springframework.util.Assert;
@@ -66,6 +70,8 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -78,6 +84,7 @@ import java.util.function.Function;
 @AutoConfigureBefore({ MongoAutoConfiguration.class, MongoReactiveAutoConfiguration.class })
 @ConditionalOnClass({ MongoClientSettings.class, Mongod.class })
 @Import({
+	EmbeddedMongoAutoConfiguration.MongoPropertiesDependsOnBeanFactoryPostProcessor.class,
 	EmbeddedMongoAutoConfiguration.EmbeddedMongoClientDependsOnBeanFactoryPostProcessor.class,
 	EmbeddedMongoAutoConfiguration.EmbeddedReactiveStreamsMongoClientDependsOnBeanFactoryPostProcessor.class,
 })
@@ -133,41 +140,31 @@ public class EmbeddedMongoAutoConfiguration {
 	}
 
 	@Bean
-	public BeanPostProcessor setHostAndPortToMongoProperties() {
-		return new TypedBeanPostProcessor<>(MongoProperties.class, (MongoProperties it) -> {
-			try {
-				Net net = net(it, it.getPort());
-				it.setHost(net.getServerAddress().getHostName());
-				it.setPort(it.getPort());
-				return it;
-			}
-			catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}, Function.identity());
-	}
+	public Net net(ConfigurableApplicationContext context) throws IOException {
+		MongoProperties properties = bindProperties(context);
 
-	@Bean
-	public Net net(ApplicationContext context, MongoProperties properties) throws IOException {
-		Integer configuredPort = properties.getPort();
-		Net net = net(properties, configuredPort);
+		Net net = net(properties, properties.getPort());
+		String hostName = net.getServerAddress().getHostName();
 
-		// HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK
-		//
-		// IMHO this is a hack, one should NOT modify properties on injection
-		// ... but as I did not find a better way (BeanPostProcessor did not work
-		// for MongoProperties) I leave it as it is.
-		//
-		// HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK, HACK
-		properties.setPort(net.getPort());
-		properties.setHost(net.getServerAddress().getHostName());
+		Map<String, Object> map = new HashMap<>(3);
+		map.put("spring.data.mongodb.port", net.getPort());
+		map.put("spring.data.mongodb.host", hostName);
 		String uri = properties.getUri();
-		if (uri !=null) {
+		if (uri != null) {
 			String database = properties.getMongoClientDatabase();
-			properties.setUri("mongodb://"+properties.getHost()+":"+properties.getPort()+"/"+database);
+			map.put("spring.data.mongodb.uri", "mongodb://" + hostName + ":" + net.getPort() + "/" + database);
 		}
+		ConfigurableEnvironment env = context.getEnvironment();
+		env.getPropertySources().addFirst(new MapPropertySource("embeddedMongoProperties", map));
 
 		return net;
+	}
+
+	private static MongoProperties bindProperties(ApplicationContext context) {
+		MongoProperties properties = new MongoProperties();
+		context.getBean(ConfigurationPropertiesBindingPostProcessor.class)
+				.postProcessBeforeInitialization(properties, "");
+		return properties;
 	}
 
 	private static InetAddress getHost(MongoProperties properties) throws UnknownHostException {
@@ -266,6 +263,20 @@ public class EmbeddedMongoAutoConfiguration {
 
 			return builder.build();
 		}, Function.identity());
+	}
+
+	/**
+	 * Post processor to ensure that {@link MongoProperties} beans depend
+	 * on any {@link Net} beans.
+	 */
+	@ConditionalOnClass({ MongoProperties.class })
+	static class MongoPropertiesDependsOnBeanFactoryPostProcessor
+			extends AbstractDependsOnBeanFactoryPostProcessor {
+
+		public MongoPropertiesDependsOnBeanFactoryPostProcessor() {
+			super(MongoProperties.class, Net.class);
+		}
+
 	}
 
 	/**
