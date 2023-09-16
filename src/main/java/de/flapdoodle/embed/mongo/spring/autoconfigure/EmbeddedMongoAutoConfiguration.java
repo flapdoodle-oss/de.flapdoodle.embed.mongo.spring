@@ -81,7 +81,6 @@ import java.util.function.Function;
 	MongoAutoConfiguration.class, MongoReactiveAutoConfiguration.class
 })
 @EnableConfigurationProperties({ MongoProperties.class, EmbeddedMongoProperties.class })
-@AutoConfigureBefore({ MongoAutoConfiguration.class, MongoReactiveAutoConfiguration.class })
 @ConditionalOnClass({ MongoClientSettings.class, Mongod.class })
 @Import({
 	EmbeddedMongoAutoConfiguration.MongoPropertiesDependsOnBeanFactoryPostProcessor.class,

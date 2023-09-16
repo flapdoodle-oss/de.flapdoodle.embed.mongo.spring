@@ -472,7 +472,8 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-properties-migrator</artifactId>
-            <scope>runtime</scope>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
