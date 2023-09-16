@@ -85,7 +85,6 @@ import java.util.function.Function;
 })
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties({ MongoProperties.class, EmbeddedMongoProperties.class })
-@AutoConfigureBefore({ MongoAutoConfiguration.class, MongoReactiveAutoConfiguration.class, org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration.class })
 @ConditionalOnClass({ MongoClientSettings.class, Mongod.class })
 @Import({
 	EmbeddedMongoAutoConfiguration.MongoPropertiesDependsOnBeanFactoryPostProcessor.class,
