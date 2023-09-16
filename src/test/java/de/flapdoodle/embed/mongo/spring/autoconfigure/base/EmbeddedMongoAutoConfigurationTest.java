@@ -28,22 +28,23 @@ import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration;
 import de.flapdoodle.embed.mongo.spring.autoconfigure.MongodWrapper;
 import de.flapdoodle.embed.mongo.transitions.Mongod;
+import de.flapdoodle.embed.process.runtime.Network;
 import de.flapdoodle.reverse.Listener;
 import org.bson.Document;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -107,8 +108,8 @@ class EmbeddedMongoAutoConfigurationTests {
 		loadWithValidVersion();
 		assertThat(this.context.getBeansOfType(MongoClient.class)).hasSize(1);
 		MongoClient client = this.context.getBean(MongoClient.class);
-		Integer mongoPort = Integer.valueOf(this.context.getEnvironment().getProperty("local.mongo.port"));
-		assertThat(getPort(client)).isEqualTo(mongoPort);
+		MongoProperties properties = this.context.getBean(MongoProperties.class);
+		assertThat(getPort(client)).isEqualTo(properties.getPort());
 	}
 
 	@Test
@@ -116,29 +117,20 @@ class EmbeddedMongoAutoConfigurationTests {
 		loadWithValidVersion("spring.data.mongodb.port=0");
 		assertThat(this.context.getBeansOfType(MongoClient.class)).hasSize(1);
 		MongoClient client = this.context.getBean(MongoClient.class);
-		Integer mongoPort = Integer.valueOf(this.context.getEnvironment().getProperty("local.mongo.port"));
-		assertThat(getPort(client)).isEqualTo(mongoPort);
+		MongoProperties properties = this.context.getBean(MongoProperties.class);
+		assertThat(getPort(client)).isEqualTo(properties.getPort());
+		assertThat(getPort(client)).isNotEqualTo(0);
 	}
 
 	@Test
-	void randomlyAllocatedPortIsAvailableWhenCreatingMongoClient() {
-		loadWithValidVersion(MongoClientConfiguration.class);
+	void useSpecifiedPort() throws IOException {
+		int port = Network.freeServerPort(Network.getLocalHost());
+		loadWithValidVersion("spring.data.mongodb.port="+port);
+		assertThat(this.context.getBeansOfType(MongoClient.class)).hasSize(1);
 		MongoClient client = this.context.getBean(MongoClient.class);
-		Integer mongoPort = Integer.valueOf(this.context.getEnvironment().getProperty("local.mongo.port"));
-		assertThat(getPort(client)).isEqualTo(mongoPort);
-	}
-
-	@Test
-	void portIsAvailableInParentContext() {
-		try (ConfigurableApplicationContext parent = new AnnotationConfigApplicationContext()) {
-			TestPropertyValues.of("de.flapdoodle.mongodb.embedded.version=3.5.5").applyTo(parent);
-			parent.refresh();
-			this.context = new AnnotationConfigApplicationContext();
-			this.context.setParent(parent);
-			this.context.register(EmbeddedMongoAutoConfiguration.class, MongoClientConfiguration.class);
-			this.context.refresh();
-			assertThat(parent.getEnvironment().getProperty("local.mongo.port")).isNotNull();
-		}
+		MongoProperties properties = this.context.getBean(MongoProperties.class);
+		assertThat(getPort(client)).isEqualTo(properties.getPort());
+		assertThat(getPort(client)).isEqualTo(port);
 	}
 
 	@Test
@@ -276,8 +268,8 @@ class EmbeddedMongoAutoConfigurationTests {
 	static class MongoClientConfiguration {
 
 		@Bean
-		MongoClient mongoClient(@Value("${local.mongo.port}") int port) {
-			return MongoClients.create("mongodb://localhost:" + port);
+		MongoClient mongoClient(/*@Value("${local.mongo.port}") int port*/MongoProperties properties) {
+			return MongoClients.create("mongodb://"+properties.getHost()+":" + properties.getPort());
 		}
 
 	}
