@@ -25,7 +25,7 @@ dependency ( [![Maven Central](https://img.shields.io/maven-central/v/de.flapdoo
     <dependency>
          <groupId>de.flapdoodle.embed</groupId>
          <artifactId>de.flapdoodle.embed.mongo</artifactId>
-         <version>4.9.3</version>
+         <version>4.9.2</version>
     </dependency>
 
 ### Usage
