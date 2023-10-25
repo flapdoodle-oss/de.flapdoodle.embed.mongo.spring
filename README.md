@@ -51,7 +51,7 @@ Spring gradle plugin `io.spring.dependency-management`:
 ```
 gradle dependencyManagement
 ```
-This is no longer an issue in Spring Boot version 3.0.0 and later as the dependency management coordindate for
+This is no longer an issue in Spring Boot version 3.0.0 and later as the dependency management coordinate for
 `de.flapdoodle.embed:de.flapdoodle.embed.mongo` was removed.  
 
 ### Canary Project
