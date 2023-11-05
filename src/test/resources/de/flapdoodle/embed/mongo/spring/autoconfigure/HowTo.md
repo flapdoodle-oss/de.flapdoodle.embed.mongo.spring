@@ -72,3 +72,11 @@ ${customizeMongod}
 ## Config Prefix
 
 Use '${noop.prefix}' as prefix in your config files.
+
+## Test with a real database
+
+If you want to test with an 'unmanaged' mongodb database, you must disable the auto configuration by excluding EmbeddedMongoAutoConfiguration:
+
+```java
+@EnableAutoConfiguration(exclude = {EmbeddedMongoAutoConfiguration.class})
+```
