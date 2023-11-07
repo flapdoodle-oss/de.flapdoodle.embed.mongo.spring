@@ -16,7 +16,7 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 	<dependency>
 		<groupId>de.flapdoodle.embed</groupId>
 		<artifactId>de.flapdoodle.embed.mongo.spring26x</artifactId>
-		<version>4.10.0</version>
+		<version>4.10.1</version>
 	</dependency>
 
 If you are getting some older version (< 4.x.x) for 'de.flapdoodle.embed.mongo', you must add the
@@ -25,7 +25,7 @@ dependency ( [![Maven Central](https://img.shields.io/maven-central/v/de.flapdoo
     <dependency>
          <groupId>de.flapdoodle.embed</groupId>
          <artifactId>de.flapdoodle.embed.mongo</artifactId>
-         <version>4.10.0</version>
+         <version>4.10.1</version>
     </dependency>
 
 ### Usage
