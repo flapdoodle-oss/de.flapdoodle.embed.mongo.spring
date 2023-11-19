@@ -20,53 +20,17 @@
  */
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.MongoCredential;
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-import de.flapdoodle.embed.mongo.commands.MongodArguments;
-import de.flapdoodle.embed.mongo.commands.ServerAddress;
-import de.flapdoodle.embed.mongo.distribution.IFeatureAwareVersion;
-import de.flapdoodle.embed.mongo.packageresolver.Feature;
-import de.flapdoodle.embed.mongo.transitions.Mongod;
-import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
-import de.flapdoodle.reverse.Listener;
-import de.flapdoodle.reverse.StateID;
-import org.bson.Document;
+import de.flapdoodle.embed.mongo.client.SyncClientAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
 
 public class SyncClientServerFactory extends AbstractServerFactory<MongoClient> {
 	private static Logger logger = LoggerFactory.getLogger(SyncClientServerFactory.class);
 
 	SyncClientServerFactory(MongoProperties properties) {
-		super(properties);
+		super(properties, new SyncClientAdapter());
 		logger.info("sync server factory");
-	}
-
-	protected MongoClient client(ServerAddress serverAddress) {
-		return MongoClients.create("mongodb://"+serverAddress);
-	}
-
-	protected MongoClient client(ServerAddress serverAddress, MongoCredential credential) {
-		return MongoClients.create(MongoClientSettings.builder()
-			.applyConnectionString(new ConnectionString("mongodb://"+serverAddress))
-			.credential(credential)
-			.build());
-	}
-
-	protected Document resultOfAction(MongoClient client, MongoClientAction.Action action) {
-		if (action instanceof MongoClientAction.RunCommand) {
-			return client.getDatabase(action.database()).runCommand(((MongoClientAction.RunCommand) action).command());
-		}
-		throw new IllegalArgumentException("Action not supported: "+action);
 	}
 }
