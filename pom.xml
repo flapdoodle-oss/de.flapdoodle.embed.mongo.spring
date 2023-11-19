@@ -342,6 +342,7 @@
     </profiles>
 
     <properties>
+        <immutables.version>2.10.0</immutables.version>
         <!-- eclipse apt switch -->
         <m2e.apt.activation>jdt_apt</m2e.apt.activation>
         <spring.boot.version>2.6.15</spring.boot.version>
@@ -388,18 +389,18 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>4.10.1</version>
+            <version>4.11.1</version>
         </dependency>
         <dependency>
             <groupId>org.immutables</groupId>
             <artifactId>value</artifactId>
-            <version>2.9.3</version>
+            <version>${immutables.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.immutables</groupId>
             <artifactId>builder</artifactId>
-            <version>2.9.3</version>
+            <version>${immutables.version}</version>
             <scope>provided</scope>
         </dependency>
 
