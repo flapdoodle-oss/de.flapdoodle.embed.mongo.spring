@@ -11,11 +11,11 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.flapdoodle.embed</groupId>
-    <artifactId>de.flapdoodle.embed.mongo.spring31x</artifactId>
+    <artifactId>de.flapdoodle.embed.mongo.spring3x</artifactId>
     <name>Flapdoodle Embedded MongoDB Spring Integration</name>
     <version>4.11.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <description>flapdoodle embedded mongo spring 3.1.x integration</description>
+    <description>flapdoodle embedded mongo spring 3.x.x integration</description>
 
     <url>http://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo.spring</url>
 
@@ -349,6 +349,8 @@
         <!-- eclipse apt switch -->
         <m2e.apt.activation>jdt_apt</m2e.apt.activation>
         <spring.boot.version>3.1.5</spring.boot.version>
+
+        <junit5.version>5.9.3</junit5.version>
     </properties>
 
     <dependencies>
@@ -356,26 +358,31 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>
+            <version>${junit5.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
+            <version>${junit5.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
+            <version>${junit5.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
+            <version>${junit5.version}</version>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
+            <version>3.24.2</version>
         </dependency>
         <dependency>
             <groupId>de.flapdoodle.testdoc</groupId>
@@ -387,6 +394,7 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
+            <version>2.0.9</version>
         </dependency>
 
         <dependency>
@@ -411,63 +419,74 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
             <scope>provided</scope>
+            <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
             <scope>provided</scope>
+            <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure-processor</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
+            <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <scope>provided</scope>
+            <version>6.0.13</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-test-autoconfigure</artifactId>
             <scope>provided</scope>
+            <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
+            <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-mongodb</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
+            <version>4.1.5</version>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-reactivestreams</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
+            <version>4.9.1</version>
         </dependency>
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
+            <version>3.5.11</version>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-core</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
+            <version>4.9.1</version>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
+            <version>4.9.1</version>
         </dependency>
 
         <dependency>
@@ -475,18 +494,19 @@
             <artifactId>spring-boot-properties-migrator</artifactId>
             <scope>provided</scope>
             <optional>true</optional>
+            <version>${spring.boot.version}</version>
         </dependency>
     </dependencies>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+<!--    <dependencyManagement>-->
+<!--        <dependencies>-->
+<!--            <dependency>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-dependencies</artifactId>-->
+<!--                <version>${spring.boot.version}</version>-->
+<!--                <type>pom</type>-->
+<!--                <scope>import</scope>-->
+<!--            </dependency>-->
+<!--        </dependencies>-->
+<!--    </dependencyManagement>-->
 </project>
