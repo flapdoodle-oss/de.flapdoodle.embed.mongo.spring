@@ -25,8 +25,10 @@ dependency ( [![Maven Central](https://img.shields.io/maven-central/v/de.flapdoo
     <dependency>
          <groupId>de.flapdoodle.embed</groupId>
          <artifactId>de.flapdoodle.embed.mongo</artifactId>
-         <version>4.11.1</version>
+         <version>4.12.0</version>
     </dependency>
+
+You can use this dependency with any spring 2.5.x version.
 
 ### Usage
 
@@ -37,4 +39,4 @@ on each build by running this code, it should work as expected:)
 
 To see if all works as expected and as a playground for integration problems you may have a look at
 [flapdoodle embed mongo canary](https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo.canary). There you will
-find a minimal example for spring2.6.x, spring2.7.x , spring3.0.x and spring3.1.x (hint: spring3.0.x needs java17). 
+find a minimal example for spring2.6.x, spring2.7.x , spring3.x.x (hint: spring3.x.x needs java17). 
