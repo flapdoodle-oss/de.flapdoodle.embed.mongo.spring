@@ -350,7 +350,7 @@
         <m2e.apt.activation>jdt_apt</m2e.apt.activation>
         <spring.boot.version>3.1.5</spring.boot.version>
 
-        <junit5.version>5.9.3</junit5.version>
+        <junit5.version>5.10.1</junit5.version>
     </properties>
 
     <dependencies>
@@ -400,7 +400,7 @@
         <dependency>
             <groupId>de.flapdoodle.embed</groupId>
             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-            <version>4.11.1</version>
+            <version>4.12.0</version>
         </dependency>
         <dependency>
             <groupId>org.immutables</groupId>
