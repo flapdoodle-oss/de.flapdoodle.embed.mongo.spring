@@ -21,7 +21,7 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 		<version>4.11.0</version>
 	</dependency>
 
-You can use this dependency with any spring 3.x.x version.               
+You can use this dependency with any spring 3.x.x version.
 
 ### Usage
 
