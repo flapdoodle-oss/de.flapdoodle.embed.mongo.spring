@@ -16,7 +16,7 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 	<dependency>
 		<groupId>de.flapdoodle.embed</groupId>
 		<artifactId>de.flapdoodle.embed.mongo.spring27x</artifactId>
-		<version>4.12.6</version>
+		<version>4.13.0</version>
 	</dependency>
 
 If you are getting some older version (< 4.x.x) for 'de.flapdoodle.embed.mongo', you must add the
@@ -44,7 +44,7 @@ The recommended way to overwrite this dependency management coordinate set by th
 ```
 dependencyManagement {
     dependencies {
-        dependency group:'de.flapdoodle.embed', name:'de.flapdoodle.embed.mongo', version:'4.12.6'
+        dependency group:'de.flapdoodle.embed', name:'de.flapdoodle.embed.mongo', version:'4.13.0'
     }
 }
 ```
