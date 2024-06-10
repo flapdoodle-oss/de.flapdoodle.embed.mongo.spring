@@ -30,6 +30,7 @@ import de.flapdoodle.embed.mongo.distribution.Versions;
 import de.flapdoodle.embed.mongo.transitions.ImmutableMongod;
 import de.flapdoodle.embed.mongo.transitions.Mongod;
 import de.flapdoodle.embed.mongo.types.DatabaseDir;
+import de.flapdoodle.embed.mongo.types.StartTimeout;
 import de.flapdoodle.embed.process.distribution.Version;
 import de.flapdoodle.embed.process.io.ProcessOutput;
 import de.flapdoodle.embed.process.io.Processors;
@@ -176,6 +177,11 @@ public class EmbeddedMongoAutoConfiguration {
 			.net(Start.to(Net.class).initializedWith(net))
 			.processOutput(Start.to(ProcessOutput.class).initializedWith(processOutput))
 			.build();
+
+		if (embeddedProperties.getStarttimeout()>0){
+			copy = copy.withStartTimeout(Start.to(StartTimeout.class)
+				.initializedWith(StartTimeout.of(embeddedProperties.getStarttimeout())));
+		}
 
 		if (progressListener != null) {
 			copy = copy

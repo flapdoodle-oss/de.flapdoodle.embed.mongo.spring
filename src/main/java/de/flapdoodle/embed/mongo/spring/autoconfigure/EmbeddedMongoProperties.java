@@ -35,6 +35,8 @@ public class EmbeddedMongoProperties {
 
 	private String databaseDir;
 
+	private long startTimeout;
+
 	private final EmbeddedMongoProperties.Storage storage = new EmbeddedMongoProperties.Storage();
 
 	/**
@@ -56,7 +58,15 @@ public class EmbeddedMongoProperties {
 	public void setDatabaseDir(String databaseDir) {
 		this.databaseDir = databaseDir;
 	}
-	
+
+	public long getStarttimeout() {
+		return startTimeout;
+	}
+
+	public void setStarttimeout(long startTimeout) {
+		this.startTimeout = startTimeout;
+	}
+
 	public EmbeddedMongoProperties.Storage getStorage() {
 		return this.storage;
 	}
