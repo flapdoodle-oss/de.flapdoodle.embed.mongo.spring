@@ -30,6 +30,8 @@ dependency ( [![Maven Central](https://img.shields.io/maven-central/v/de.flapdoo
 
 You can use this dependency with any spring 2.7.x version.
 
+To enable logging you must choose some matching adapter for [slf4j.org](https://www.slf4j.org/) This projects uses slf4j-api version 1.7.xx.
+
 ### Usage
 
 You might find an example for different use cases in this [documentation](HowTo.md). As this documentation is generated
