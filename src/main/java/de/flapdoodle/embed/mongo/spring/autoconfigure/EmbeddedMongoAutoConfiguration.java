@@ -169,7 +169,7 @@ public class EmbeddedMongoAutoConfiguration {
 
 	private static InetAddress getHost(MongoProperties properties) throws UnknownHostException {
 		if (properties.getHost() == null) {
-			return InetAddress.getByAddress(Network.localhostIsIPv6()
+			return InetAddress.getByAddress(de.flapdoodle.net.Net.localhostIsIPv6()
 				? IP6_LOOPBACK_ADDRESS
 				: IP4_LOOPBACK_ADDRESS);
 		}
@@ -180,8 +180,8 @@ public class EmbeddedMongoAutoConfiguration {
 		InetAddress host = getHost(properties);
 
 		return (configuredPort != null && configuredPort > 0)
-			? Net.of(host.getHostAddress(), configuredPort, Network.localhostIsIPv6())
-			: Net.of(host.getHostAddress(), Network.freeServerPort(host), Network.localhostIsIPv6());
+			? Net.of(host.getHostAddress(), configuredPort, de.flapdoodle.net.Net.localhostIsIPv6())
+			: Net.of(host.getHostAddress(), de.flapdoodle.net.Net.freeServerPort(host), de.flapdoodle.net.Net.localhostIsIPv6());
 	}
 
 	@Bean
