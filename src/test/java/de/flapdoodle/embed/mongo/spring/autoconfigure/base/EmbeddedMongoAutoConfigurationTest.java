@@ -98,6 +98,12 @@ class EmbeddedMongoAutoConfigurationTests {
 	}
 
 	@Test
+	void mongodb8() {
+		String version = Version.V8_0_3.asInDownloadPath();
+		assertVersionConfiguration(version, version);
+	}
+
+	@Test
 	void customUnknownVersion() {
 		assertVersionConfiguration("4.4.0", "4.4.0");
 	}
