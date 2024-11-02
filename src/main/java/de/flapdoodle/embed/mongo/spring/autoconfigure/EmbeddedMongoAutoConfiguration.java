@@ -22,11 +22,15 @@ package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
 import com.mongodb.MongoClientSettings;
 import de.flapdoodle.embed.mongo.commands.ImmutableMongodArguments;
+import de.flapdoodle.embed.mongo.commands.MongoImportArguments;
 import de.flapdoodle.embed.mongo.commands.MongodArguments;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.config.Storage;
 import de.flapdoodle.embed.mongo.distribution.IFeatureAwareVersion;
 import de.flapdoodle.embed.mongo.distribution.Versions;
+import de.flapdoodle.embed.mongo.packageresolver.FeatureSet;
+import de.flapdoodle.embed.mongo.packageresolver.HasMongotoolsPackage;
+import de.flapdoodle.embed.mongo.packageresolver.NumericVersion;
 import de.flapdoodle.embed.mongo.transitions.ImmutableMongod;
 import de.flapdoodle.embed.mongo.transitions.Mongod;
 import de.flapdoodle.embed.mongo.types.DatabaseDir;
@@ -37,7 +41,6 @@ import de.flapdoodle.embed.process.io.Processors;
 import de.flapdoodle.embed.process.io.Slf4jLevel;
 import de.flapdoodle.embed.process.io.progress.ProgressListener;
 import de.flapdoodle.embed.process.io.progress.Slf4jProgressListener;
-import de.flapdoodle.embed.process.runtime.Network;
 import de.flapdoodle.reverse.transitions.Start;
 import de.flapdoodle.types.Try;
 import org.slf4j.Logger;
@@ -71,7 +74,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -100,9 +105,10 @@ public class EmbeddedMongoAutoConfiguration {
 			IFeatureAwareVersion version,
 			MongoProperties properties,
 			Mongod mongod,
-			MongodArguments mongodArguments) {
+			MongodArguments mongodArguments,
+			List<MongoImportArguments> mongoImportArguments) {
 			return new SyncClientServerFactory(properties)
-				.createWrapper(version, mongod, mongodArguments);
+				.createWrapper(version, mongod, mongodArguments, mongoImportArguments);
 		}
 
 	}
@@ -116,22 +122,31 @@ public class EmbeddedMongoAutoConfiguration {
 			IFeatureAwareVersion version,
 			MongoProperties properties,
 			Mongod mongod,
-			MongodArguments mongodArguments) {
+			MongodArguments mongodArguments,
+			List<MongoImportArguments> mongoImportArguments) {
 			return new ReactiveClientServerFactory(properties)
-				.createWrapper(version, mongod, mongodArguments);
+				.createWrapper(version, mongod, mongodArguments, mongoImportArguments);
 		}
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	public IFeatureAwareVersion version(EmbeddedMongoProperties embeddedProperties) {
-		return determineVersion("de.flapdoodle", embeddedProperties.getVersion());
+		return determineVersion("de.flapdoodle", embeddedProperties.getVersion(), embeddedProperties.getToolsVersion());
 	}
 
-	private static IFeatureAwareVersion determineVersion(String prefix, String version) {
+	private static IFeatureAwareVersion determineVersion(String prefix, String version, String toolsVersion) {
 		Assert.state(version != null, "Set the " + prefix + ".mongodb.embedded.version property or "
 			+ "define your own " + IFeatureAwareVersion.class.getSimpleName() + " bean to use embedded MongoDB");
-		return Versions.withFeatures(createEmbeddedMongoVersion(version));
+		IFeatureAwareVersion featureAwareVersion = Versions.withFeatures(createEmbeddedMongoVersion(version));
+		
+		return toolsVersion != null
+			? withToolsVersion(featureAwareVersion, toolsVersion)
+			: featureAwareVersion;
+	}
+
+	private static IFeatureAwareVersion withToolsVersion(IFeatureAwareVersion delegate, String toolsVersion) {
+		return new ToolsVersionWrapper(delegate, toolsVersion);
 	}
 
 	private static Version.GenericVersion createEmbeddedMongoVersion(String version) {
@@ -310,4 +325,32 @@ public class EmbeddedMongoAutoConfiguration {
 		return (Map<String, Object>) propertySource.getSource();
 	}
 
+	private static class ToolsVersionWrapper implements IFeatureAwareVersion, HasMongotoolsPackage {
+		private final IFeatureAwareVersion delegate;
+		private final String toolsVersion;
+		public ToolsVersionWrapper(IFeatureAwareVersion delegate, String toolsVersion) {
+			this.delegate = delegate;
+			this.toolsVersion = toolsVersion;
+		}
+
+		@Override
+		public FeatureSet features() {
+			return delegate.features();
+		}
+
+		@Override
+		public NumericVersion numericVersion() {
+			return delegate.numericVersion();
+		}
+
+		@Override
+		public String asInDownloadPath() {
+			return delegate.asInDownloadPath();
+		}
+
+		@Override
+		public Optional<? extends Version> mongotoolsVersion() {
+			return Optional.of(Version.of(toolsVersion));
+		}
+	}
 }
