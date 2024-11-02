@@ -23,6 +23,16 @@ configuration you must annotate your test with `@DirtiesContext` so that this te
 ${secondIsolation}
 ```
 
+## Json Import
+                        
+If you create a bean config for a list of `MongoImportArguments` a mongoimport process is started as soon as the mongodb is running but before
+any test code is executed.
+If `mongoimport` is not bundled within the mongodb version, then you have to define a tools version: '${noop.prefix}.tools-version'.
+
+```java
+${importJsonClass}
+```
+
 ## Transactions
 
 To enable transactions with spring data, there is one minimal setup. Imagine you have an person repository:                 

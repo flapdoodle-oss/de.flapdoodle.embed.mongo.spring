@@ -40,6 +40,7 @@ public class HowToTest {
 	@RegisterExtension
 	public static Recording recording= Recorder.with("HowTo.md", TabSize.spaces(2))
 		.sourceCodeOf("autoConfigClass", AutoConfigTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		.sourceCodeOf("importJsonClass", ImportJsonTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
 		.sourceCodeOf("firstIsolation", AutoConfigFirstIsolationTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
 		.sourceCodeOf("secondIsolation", AutoConfigSecondIsolationTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
 		.sourceCodeOf("transaction.test", TransactionalTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
