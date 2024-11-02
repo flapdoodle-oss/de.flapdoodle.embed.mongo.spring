@@ -33,6 +33,8 @@ public class EmbeddedMongoProperties {
 	 */
 	private String version;
 
+	private String toolsVersion;
+
 	private String databaseDir;
 
 	private long startTimeout;
@@ -49,6 +51,14 @@ public class EmbeddedMongoProperties {
 
 	public void setVersion(String version) {
 		this.version = version;
+	}
+
+	public String getToolsVersion() {
+		return this.toolsVersion;
+	}
+
+	public void setToolsVersion(String version) {
+		this.toolsVersion = version;
 	}
 
 	public String getDatabaseDir() {

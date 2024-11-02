@@ -20,15 +20,25 @@
  */
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
+import de.flapdoodle.checks.Preconditions;
 import de.flapdoodle.embed.mongo.client.AuthenticationSetup;
 import de.flapdoodle.embed.mongo.client.ClientActions;
 import de.flapdoodle.embed.mongo.client.ExecuteMongoClientAction;
 import de.flapdoodle.embed.mongo.client.UsernamePassword;
+import de.flapdoodle.embed.mongo.commands.MongoImportArguments;
 import de.flapdoodle.embed.mongo.commands.MongodArguments;
+import de.flapdoodle.embed.mongo.commands.ServerAddress;
 import de.flapdoodle.embed.mongo.config.Storage;
 import de.flapdoodle.embed.mongo.distribution.IFeatureAwareVersion;
+import de.flapdoodle.embed.mongo.transitions.ExecutedMongoImportProcess;
+import de.flapdoodle.embed.mongo.transitions.MongoImport;
 import de.flapdoodle.embed.mongo.transitions.Mongod;
+import de.flapdoodle.embed.mongo.transitions.RunningMongodProcess;
 import de.flapdoodle.reverse.Listener;
+import de.flapdoodle.reverse.StateID;
+import de.flapdoodle.reverse.TransitionWalker;
+import de.flapdoodle.reverse.Transitions;
+import de.flapdoodle.reverse.transitions.Start;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 
 import java.io.Closeable;
@@ -47,12 +57,14 @@ public abstract class AbstractServerFactory<C extends Closeable> {
 	public final MongodWrapper createWrapper(
 		IFeatureAwareVersion version,
 		Mongod mongod,
-		MongodArguments mongodArguments
+		MongodArguments mongodArguments,
+		List<MongoImportArguments> mongoImportArguments
 	) {
 		return new MongodWrapper(
 			mongod.transitions(version),
 			addAuthUserToDB(properties),
-			initReplicaSet(version, properties, mongodArguments)
+			initReplicaSet(version, properties, mongodArguments),
+			importJsonWithMongoImport(version, mongoImportArguments)
 		);
 	}
 
@@ -82,5 +94,34 @@ public abstract class AbstractServerFactory<C extends Closeable> {
 		} else {
 			return Listener.builder().build();
 		}
+	}
+
+	private Listener importJsonWithMongoImport(IFeatureAwareVersion version, List<MongoImportArguments> mongoImportArgumentsList) {
+		if (!mongoImportArgumentsList.isEmpty()) {
+
+			Listener.TypedListener.Builder builder = Listener.typedBuilder();
+			builder.onStateReached(StateID.of(RunningMongodProcess.class), runningMongodProcess -> {
+
+
+				for (MongoImportArguments mongoImportArguments : mongoImportArgumentsList) {
+					Transitions mongoImportTransitions = MongoImport.instance()
+						.transitions(version)
+						.replace(Start.to(MongoImportArguments.class).initializedWith(mongoImportArguments))
+						.addAll(Start.to(ServerAddress.class).initializedWith(runningMongodProcess.getServerAddress()));
+
+					try (TransitionWalker.ReachedState<ExecutedMongoImportProcess> executed = mongoImportTransitions.walker()
+						.initState(StateID.of(ExecutedMongoImportProcess.class))) {
+
+						if (executed.current().returnCode()!=0) {
+							throw new IllegalStateException("mongo import failed: "+ mongoImportArguments);
+						}
+						// import done
+					}
+				}
+			});
+
+			return builder.build();
+		}
+		return Listener.builder().build();
 	}
 }

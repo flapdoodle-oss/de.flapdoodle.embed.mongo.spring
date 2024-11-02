@@ -56,6 +56,60 @@ public class AutoConfigSecondIsolationTest {
 }
 ```
 
+## Json Import
+                        
+If you create a bean config for a list of `MongoImportArguments` a mongoimport process is started as soon as the mongodb is running but before
+any test code is executed.
+If `mongoimport` is not bundled within the mongodb version, then you have to define a tools version: 'de.flapdoodle.mongodb.embedded.tools-version'.
+
+```java
+@DataMongoTest()
+@ExtendWith(SpringExtension.class)
+@Import(ImportJsonTest.Config.class)
+public class ImportJsonTest {
+  @Test
+  void example(@Autowired final MongoTemplate mongoTemplate) {
+    assertThat(mongoTemplate.getDb()).isNotNull();
+
+    ArrayList<Document> first = mongoTemplate.getDb()
+      .getCollection("first")
+      .find()
+      .into(new ArrayList<>());
+
+    assertThat(first).hasSize(3)
+      .anyMatch(doc -> doc.get("name", String.class).equals("Cassandra"));
+
+    ArrayList<Document> second = mongoTemplate.getDb()
+      .getCollection("second")
+      .find()
+      .into(new ArrayList<>());
+
+    assertThat(second).hasSize(2)
+      .anyMatch(doc -> doc.get("name", String.class).equals("Susi"));
+  }
+
+  static class Config {
+    @Bean
+    public List<MongoImportArguments> jsonImportArguments() {
+      return Arrays.asList(MongoImportArguments.builder()
+          .databaseName("test")
+          .collectionName("first")
+          .importFile(ImportJsonTest.class.getResource("/first.json").getFile())
+          .isJsonArray(true)
+          .upsertDocuments(true)
+          .build(),
+        MongoImportArguments.builder()
+          .databaseName("test")
+          .collectionName("second")
+          .importFile(ImportJsonTest.class.getResource("/second.json").getFile())
+          .isJsonArray(true)
+          .upsertDocuments(true)
+          .build());
+    }
+  }
+}
+```
+
 ## Transactions
 
 To enable transactions with spring data, there is one minimal setup. Imagine you have an person repository:                 
