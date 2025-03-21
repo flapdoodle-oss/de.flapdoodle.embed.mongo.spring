@@ -20,6 +20,7 @@
  */
 package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
+import com.mongodb.MongoClientSettings;
 import com.mongodb.reactivestreams.client.MongoClient;
 import de.flapdoodle.embed.mongo.client.ReactiveClientAdapter;
 import org.slf4j.Logger;
@@ -29,8 +30,8 @@ import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 public class ReactiveClientServerFactory extends AbstractServerFactory<MongoClient> {
 	private static Logger logger = LoggerFactory.getLogger(ReactiveClientServerFactory.class);
 
-	ReactiveClientServerFactory(MongoProperties properties) {
-		super(properties, new ReactiveClientAdapter());
+	ReactiveClientServerFactory(MongoProperties properties, MongoClientSettings clientSettings) {
+		super(properties, new ReactiveClientAdapter(clientSettings));
 		logger.info("reactive server factory");
 	}
 }

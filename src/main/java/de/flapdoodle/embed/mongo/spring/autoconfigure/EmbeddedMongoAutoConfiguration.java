@@ -108,10 +108,11 @@ public class EmbeddedMongoAutoConfiguration {
 		public MongodWrapper syncClientServerWrapper(
 			IFeatureAwareVersion version,
 			MongoProperties properties,
+			MongoClientSettings clientSettings,
 			Mongod mongod,
 			MongodArguments mongodArguments,
 			List<MongoImportArguments> mongoImportArguments) {
-			return new SyncClientServerFactory(properties)
+			return new SyncClientServerFactory(properties, clientSettings)
 				.createWrapper(version, mongod, mongodArguments, mongoImportArguments);
 		}
 
@@ -125,10 +126,11 @@ public class EmbeddedMongoAutoConfiguration {
 		public MongodWrapper reactiveClientServerWrapper(
 			IFeatureAwareVersion version,
 			MongoProperties properties,
+			MongoClientSettings clientSettings,
 			Mongod mongod,
 			MongodArguments mongodArguments,
 			List<MongoImportArguments> mongoImportArguments) {
-			return new ReactiveClientServerFactory(properties)
+			return new ReactiveClientServerFactory(properties, clientSettings)
 				.createWrapper(version, mongod, mongodArguments, mongoImportArguments);
 		}
 	}
