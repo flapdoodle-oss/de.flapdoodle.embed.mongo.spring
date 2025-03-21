@@ -1,7 +1,7 @@
 # Usage
 
-You must disable the auto configuration provided by spring by disabling the spring provided
-auto configuration class:
+You must disable the autoconfiguration provided by spring by disabling the spring provided
+autoconfiguration class:
 
 ```java
 @DataMongoTest(
@@ -253,6 +253,54 @@ public class CustomizeMongodTest {
   @Test
   void example(@Autowired final MongoTemplate mongoTemplate) {
     assertThat(mongoTemplate.getDb()).isNotNull();
+  }
+
+}
+```
+
+## Customize MongoClientSettings
+
+You can also customize MongoClientSettings:
+
+```java
+@Configuration
+public class MongoClientSettingsConfig {
+
+  @Bean
+  public MongoClientSettingsBuilderCustomizer mongoClientSettingsBuilderCustomizer() {
+    Map<BsonType, Class<?>> replacements = new HashMap<>();
+    replacements.put(BsonType.DATE_TIME, LocalDateTime.class);
+    BsonTypeClassMap classMap = new BsonTypeClassMap(replacements);
+
+    return builder -> builder.codecRegistry(CodecRegistries.fromRegistries(
+      CodecRegistries.fromProviders(new DocumentCodecProvider(classMap)),
+      MongoClientSettings.getDefaultCodecRegistry(),
+      CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build())
+    ));
+  }
+}
+```
+
+```java
+@AutoConfigureDataMongo
+@SpringBootTest()
+@EnableAutoConfiguration
+@DirtiesContext
+public class CustomizeMongoClientSettingsTest {
+
+  @Test
+  void example(@Autowired final MongoTemplate mongoTemplate) {
+    LocalDateTime dateTime = LocalDateTime.of(2027, Month.AUGUST, 3, 12, 0, 5);
+
+    mongoTemplate.getDb().getCollection("sample")
+      .insertOne(
+        new Document("name", "klaus")
+          .append("meetMe", dateTime)
+      );
+
+    Document first = mongoTemplate.getDb().getCollection("sample").find().first();
+    assertThat(first).isNotNull();
+    assertThat(first.get("meetMe")).isEqualTo(dateTime);
   }
 
 }

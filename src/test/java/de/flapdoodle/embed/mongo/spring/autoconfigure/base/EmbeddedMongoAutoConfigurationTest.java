@@ -141,7 +141,7 @@ class EmbeddedMongoAutoConfigurationTests {
 			parent.refresh();
 			this.context = new AnnotationConfigApplicationContext();
 			this.context.setParent(parent);
-			this.context.register(EmbeddedMongoAutoConfiguration.class, MongoClientConfiguration.class);
+			this.context.register(EmbeddedMongoAutoConfiguration.class, MongoClientConfiguration.class, MongoAutoConfiguration.class);
 			this.context.refresh();
 			assertThat(parent.getEnvironment().getProperty("local.mongo.port")).isNotNull();
 		}

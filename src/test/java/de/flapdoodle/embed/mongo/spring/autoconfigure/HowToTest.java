@@ -22,6 +22,8 @@ package de.flapdoodle.embed.mongo.spring.autoconfigure;
 
 import de.flapdoodle.embed.mongo.spring.autoconfigure.customize.CustomizeMongodTest;
 import de.flapdoodle.embed.mongo.spring.autoconfigure.customize.LocalConfig;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.mongoclientsettings.CustomizeMongoClientSettingsTest;
+import de.flapdoodle.embed.mongo.spring.autoconfigure.mongoclientsettings.MongoClientSettingsConfig;
 import de.flapdoodle.embed.mongo.spring.autoconfigure.simple.*;
 import de.flapdoodle.embed.mongo.spring.autoconfigure.transactions.PersonRepository;
 import de.flapdoodle.embed.mongo.spring.autoconfigure.transactions.PersonService;
@@ -51,6 +53,8 @@ public class HowToTest {
 		.sourceCodeOf("customStartTimeout", CustomStartTimeoutTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
 		.sourceCodeOf("customizeMongod", CustomizeMongodTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
 		.sourceCodeOf("customizeMongod.config", LocalConfig.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		.sourceCodeOf("customizeMongoClientSettings", CustomizeMongoClientSettingsTest.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
+		.sourceCodeOf("customizeMongoClientSettings.config", MongoClientSettingsConfig.class, Includes.WithoutImports, Includes.WithoutPackage, Includes.Trim)
 		;
 
 	@Test

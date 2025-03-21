@@ -1,7 +1,7 @@
 # Usage
 
-You must disable the auto configuration provided by spring by disabling the spring provided
-auto configuration class:
+You must disable the autoconfiguration provided by spring by disabling the spring provided
+autoconfiguration class:
 
 ```java
 ${autoConfigClass}
@@ -77,6 +77,18 @@ ${customizeMongod.config}
 
 ```java
 ${customizeMongod}
+```
+
+## Customize MongoClientSettings
+
+You can also customize MongoClientSettings:
+
+```java
+${customizeMongoClientSettings.config}
+```
+
+```java
+${customizeMongoClientSettings}
 ```
 
 ## Config Prefix
