@@ -21,7 +21,7 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 		<version>4.21.0</version>
 	</dependency>
 
-You can use this dependency with any spring 3.x.x version.
+You can use this dependency with any spring 3.x.x version (uses spring 3.5.2 as base version).
 
 To enable logging you must choose some matching adapter for [slf4j.org](https://www.slf4j.org/) This projects uses slf4j-api version 1.7.xx.
 
