@@ -25,7 +25,7 @@ import com.mongodb.client.MongoClient;
 import de.flapdoodle.embed.mongo.client.SyncClientAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.mongo.MongoProperties;
+import org.springframework.boot.mongodb.autoconfigure.MongoProperties;
 
 public class SyncClientServerFactory extends AbstractServerFactory<MongoClient> {
 	private static Logger logger = LoggerFactory.getLogger(SyncClientServerFactory.class);

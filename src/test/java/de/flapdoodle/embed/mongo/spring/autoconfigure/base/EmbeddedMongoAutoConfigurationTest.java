@@ -35,9 +35,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
-import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
-import org.springframework.boot.autoconfigure.mongo.MongoProperties;
+import org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration;
+import org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration;
+import org.springframework.boot.mongodb.autoconfigure.MongoProperties;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -73,7 +73,7 @@ class EmbeddedMongoAutoConfigurationTests {
 	void noVersion() {
 		this.context = new AnnotationConfigApplicationContext();
 		TestPropertyValues.of("spring.data.mongodb.port=0").applyTo(this.context);
-		this.context.register(MongoAutoConfiguration.class, MongoDataAutoConfiguration.class,
+		this.context.register(MongoAutoConfiguration.class, DataMongoAutoConfiguration.class,
 			EmbeddedMongoAutoConfiguration.class);
 		assertThatThrownBy(() -> this.context.refresh()).hasRootCauseExactlyInstanceOf(IllegalStateException.class)
 			.hasRootCauseMessage("Set the de.flapdoodle.mongodb.embedded.version property or define your own IFeatureAwareVersion "
@@ -234,7 +234,7 @@ class EmbeddedMongoAutoConfigurationTests {
 		if (configuredVersion != null) {
 			TestPropertyValues.of("de.flapdoodle.mongodb.embedded.version=" + configuredVersion).applyTo(this.context);
 		}
-		this.context.register(MongoAutoConfiguration.class, MongoDataAutoConfiguration.class,
+		this.context.register(MongoAutoConfiguration.class, DataMongoAutoConfiguration.class,
 			EmbeddedMongoAutoConfiguration.class);
 		this.context.refresh();
 		MongoTemplate mongo = this.context.getBean(MongoTemplate.class);
@@ -260,7 +260,7 @@ class EmbeddedMongoAutoConfigurationTests {
 			TestPropertyValues.of("de.flapdoodle.mongodb.embedded.version=4.4.0").applyTo(ctx);
 		}
 		TestPropertyValues.of(environment).applyTo(ctx);
-		ctx.register(EmbeddedMongoAutoConfiguration.class, MongoAutoConfiguration.class, MongoDataAutoConfiguration.class,
+		ctx.register(EmbeddedMongoAutoConfiguration.class, MongoAutoConfiguration.class, DataMongoAutoConfiguration.class,
 			PropertyPlaceholderAutoConfiguration.class);
 		ctx.refresh();
 		return ctx;

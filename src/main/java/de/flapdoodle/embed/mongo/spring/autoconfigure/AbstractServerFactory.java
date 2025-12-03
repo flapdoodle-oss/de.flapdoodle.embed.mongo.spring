@@ -39,7 +39,7 @@ import de.flapdoodle.reverse.StateID;
 import de.flapdoodle.reverse.TransitionWalker;
 import de.flapdoodle.reverse.Transitions;
 import de.flapdoodle.reverse.transitions.Start;
-import org.springframework.boot.autoconfigure.mongo.MongoProperties;
+import org.springframework.boot.mongodb.autoconfigure.MongoProperties;
 
 import java.io.Closeable;
 import java.util.*;
