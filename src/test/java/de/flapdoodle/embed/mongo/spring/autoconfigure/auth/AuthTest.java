@@ -25,7 +25,7 @@ import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
+import org.springframework.boot.data.mongodb.test.autoconfigure.AutoConfigureDataMongo;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -41,8 +41,8 @@ import static org.assertj.core.api.InstanceOfAssertFactories.MAP;
 @SpringBootTest(
 	properties = {
 		"de.flapdoodle.mongodb.embedded.version=4.4.18",
-		"spring.data.mongodb.username=customUser",
-		"spring.data.mongodb.password=userPassword123",
+		"spring.mongodb.username=customUser",
+		"spring.mongodb.password=userPassword123",
 	}
 )
 @EnableAutoConfiguration
