@@ -131,7 +131,7 @@ class EmbeddedMongoAutoConfigurationTests {
 	@Test
 	void useSpecifiedPort() throws IOException {
 		int port = Network.freeServerPort(Network.getLocalHost());
-		loadWithValidVersion("spring.data.mongodb.port="+port);
+		loadWithValidVersion("spring.mongodb.port="+port);
 		assertThat(this.context.getBeansOfType(MongoClient.class)).hasSize(1);
 		MongoClient client = this.context.getBean(MongoClient.class);
 		MongoProperties properties = this.context.getBean(MongoProperties.class);

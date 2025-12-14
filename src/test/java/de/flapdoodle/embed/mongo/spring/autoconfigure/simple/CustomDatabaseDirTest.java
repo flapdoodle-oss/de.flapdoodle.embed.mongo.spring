@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 		"de.flapdoodle.mongodb.embedded.databaseDir=${java.io.tmpdir}/customDir/${random.uuid}"
 	}
 )
-@EnableAutoConfiguration()
+@EnableAutoConfiguration
 @DirtiesContext
 public class CustomDatabaseDirTest {
 

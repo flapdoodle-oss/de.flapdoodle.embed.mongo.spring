@@ -163,12 +163,12 @@ public class EmbeddedMongoAutoConfiguration {
 		String hostName = net.getServerAddress().getHostName();
 
 		Map<String, Object> map = new HashMap<>(3);
-		map.put("spring.data.mongodb.port", net.getPort());
-		map.put("spring.data.mongodb.host", hostName);
+		map.put("spring.mongodb.port", net.getPort());
+		map.put("spring.mongodb.host", hostName);
 		String uri = properties.getUri();
 		if (uri != null) {
 			String database = properties.getMongoClientDatabase();
-			map.put("spring.data.mongodb.uri", "mongodb://" + hostName + ":" + net.getPort() + "/" + database);
+			map.put("spring.mongodb.uri", "mongodb://" + hostName + ":" + net.getPort() + "/" + database);
 		}
 		ConfigurableEnvironment env = context.getEnvironment();
 		env.getPropertySources().addFirst(new MapPropertySource("embeddedMongoProperties", map));

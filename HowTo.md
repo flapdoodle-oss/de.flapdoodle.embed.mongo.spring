@@ -4,8 +4,10 @@ You must disable the autoconfiguration provided by spring by disabling the sprin
 autoconfiguration class:
 
 ```java
-@DataMongoTest()
-@ExtendWith(SpringExtension.class)
+@AutoConfigureDataMongo
+@SpringBootTest()
+@EnableAutoConfiguration
+@DirtiesContext
 public class AutoConfigTest {
   @Test
   void example(@Autowired final MongoTemplate mongoTemplate) {
@@ -20,10 +22,11 @@ Per default there is just one mongodb instance running. In case you need test is
 with `@TestPropertySource` as in this example:
 
 ```java
-@DataMongoTest()
-@TestPropertySource(properties = "property=A")
-@ExtendWith(SpringExtension.class)
+@AutoConfigureDataMongo
+@SpringBootTest()
+@EnableAutoConfiguration
 @DirtiesContext
+@TestPropertySource(properties = "property=A")
 public class AutoConfigFirstIsolationTest {
   @Test
   void example(@Autowired final MongoTemplate mongoTemplate) {
@@ -40,10 +43,11 @@ The tests with the same configuration will share their instance. If you want to 
 configuration you must annotate your test with `@DirtiesContext` so that this test will have his own mongodb:
 
 ```java
-@DataMongoTest()
-@TestPropertySource(properties = "property=A")
-@ExtendWith(SpringExtension.class)
+@AutoConfigureDataMongo
+@SpringBootTest()
+@EnableAutoConfiguration
 @DirtiesContext
+@TestPropertySource(properties = "property=A")
 public class AutoConfigSecondIsolationTest {
   @Test
   void example(@Autowired final MongoTemplate mongoTemplate) {
@@ -63,8 +67,10 @@ any test code is executed.
 If `mongoimport` is not bundled within the mongodb version, then you have to define a tools version: 'de.flapdoodle.mongodb.embedded.tools-version'.
 
 ```java
-@DataMongoTest()
-@ExtendWith(SpringExtension.class)
+@AutoConfigureDataMongo
+@SpringBootTest()
+@EnableAutoConfiguration()
+@DirtiesContext
 @Import(ImportJsonTest.Config.class)
 public class ImportJsonTest {
   @Test
@@ -200,7 +206,7 @@ public class TransactionalTest {
     "de.flapdoodle.mongodb.embedded.databaseDir=${java.io.tmpdir}/customDir/${random.uuid}"
   }
 )
-@EnableAutoConfiguration()
+@EnableAutoConfiguration
 @DirtiesContext
 public class CustomDatabaseDirTest {
 
