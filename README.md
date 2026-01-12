@@ -13,7 +13,7 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 
 ### Maven
 
-[![Maven Central](https://img.shields.io/maven-central/v/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring31x.svg)](https://maven-badges.herokuapp.com/maven-central/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring31x)
+[![Maven Central](https://img.shields.io/maven-central/v/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring3x.svg)](https://maven-badges.herokuapp.com/maven-central/de.flapdoodle.embed/de.flapdoodle.embed.mongo.spring3x)
 
 	<dependency>
 		<groupId>de.flapdoodle.embed</groupId>
