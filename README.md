@@ -16,7 +16,7 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 	<dependency>
 		<groupId>de.flapdoodle.embed</groupId>
 		<artifactId>de.flapdoodle.embed.mongo.spring27x</artifactId>
-		<version>4.22.0</version>
+		<version>4.23.0</version>
 	</dependency>
 
 If you are getting some older version (< 4.x.x) for 'de.flapdoodle.embed.mongo', you must add the
@@ -25,12 +25,12 @@ dependency ( [![Maven Central](https://img.shields.io/maven-central/v/de.flapdoo
     <dependency>
          <groupId>de.flapdoodle.embed</groupId>
          <artifactId>de.flapdoodle.embed.mongo</artifactId>
-         <version>4.22.0</version>
+         <version>4.23.0</version>
     </dependency>
 
 You can use this dependency with any spring 2.7.x version.
 
-To enable logging you must choose some matching adapter for [slf4j.org](https://www.slf4j.org/) This projects uses slf4j-api version 1.7.xx.
+To enable logging, you must choose some matching adapter for [slf4j.org](https://www.slf4j.org/) This projects uses slf4j-api version 1.7.xx.
 
 ### Usage
 
@@ -46,7 +46,7 @@ The recommended way to overwrite this dependency management coordinate set by th
 ```
 dependencyManagement {
     dependencies {
-        dependency group:'de.flapdoodle.embed', name:'de.flapdoodle.embed.mongo', version:'4.22.0'
+        dependency group:'de.flapdoodle.embed', name:'de.flapdoodle.embed.mongo', version:'4.23.0'
     }
 }
 ```
@@ -62,4 +62,4 @@ This is no longer an issue in Spring Boot version 3.0.0 and later as the depende
 
 To see if all works as expected and as a playground for integration problems you may have a look at
 [flapdoodle embed mongo canary](https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo.canary). There you will
-find a minimal example for spring2.6.x, spring2.7.x , spring3.x.x (hint: spring3.x.x needs java17). 
+find a minimal example for spring2.6.x, spring2.7.x, spring3.x.x, spring4.x.x (hint: spring3.x.x needs java17). 
