@@ -18,7 +18,7 @@ We use http://www.apache.org/licenses/LICENSE-2.0
 	<dependency>
 		<groupId>de.flapdoodle.embed</groupId>
 		<artifactId>de.flapdoodle.embed.mongo.spring4x</artifactId>
-		<version>4.23.0</version>
+		<version>4.24.0</version>
 	</dependency>
 
 You can use this dependency with any spring 4.x.x version (uses spring 4.0.0 as base version).
