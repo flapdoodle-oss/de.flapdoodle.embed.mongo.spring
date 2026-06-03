@@ -25,7 +25,7 @@ dependency ( [![Maven Central](https://img.shields.io/maven-central/v/de.flapdoo
     <dependency>
          <groupId>de.flapdoodle.embed</groupId>
          <artifactId>de.flapdoodle.embed.mongo</artifactId>
-         <version>4.24.0</version>
+         <version>4.33.0</version>
     </dependency>
 
 You can use this dependency with any spring 2.5.x version.
